@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliPrep - Master Your Interview Skills</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg, #f8f9fc 0%, #e8ecf4 100%);
+            color: #1a202c;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 0 60px;
+        }
+
+        /* ================= HEADER ================= */
+
+        header {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .nav-link:hover {
+            color: #6366F1;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #475569;
+            border: 2px solid #cbd5e1;
+        }
+
+        .btn-outline:hover {
+            border-color: #6366F1;
+            color: #6366F1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* ================= HERO ================= */
+
+        .hero {
+            background: white;
+            padding: 60px 0 80px;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+
+        .hero-text h1 span {
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-text p {
+            font-size: 17px;
+            color: #475569;
+            margin-bottom: 32px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .hero-buttons .btn {
+            padding: 14px 32px;
+            font-size: 15px;
+            border-radius: 24px;
+        }
+
+        .hero-image {
+            display: flex;
+            justify-content: center;
+        }
+
+        .hero-illustration {
+            max-width: 900px;
+            height: 500px;
+            object-fit: contain;
+            border-radius: 32px;
+        }
+
+        /* ================= FEATURES ================= */
+
+        .features {
+            padding: 80px 0;
+            background: linear-gradient(180deg, #fafbfc 0%, #f3f4f8 100%);
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 48px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 36px 28px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        .icon-cyan { background: #e0f2fe; }
+        .icon-purple { background: #f3e8ff; }
+        .icon-indigo { background: #e0e7ff; }
+
+        /* ================= HOW IT WORKS ================= */
+
+        .how-it-works {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #f8f9fc 0%, #e8ecf4 100%);
+        }
+
+        .section-title-center {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 60px;
+        }
+
+        .how-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 60px;
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+        }
+
+        .steps-wrapper {
+            display: flex;
+            justify-content: space-around;
+            position: relative;
+        }
+
+        .step {
+            text-align: center;
+        }
+
+        .step-number {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 4px solid #8B5CF6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #8B5CF6;
+            margin-bottom: 12px;
+        }
+
+        /* ================= FOOTER ================= */
+
+        footer {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 50px 0 30px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            padding-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <nav class="container">
+        <a href="{{ url_for('landing') }}" class="logo">
+            <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo" class="logo-icon">
+            <span class="logo-text">IntelliPrep</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#about" class="nav-link">About</a>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+            <a href="{{ url_for('signup') }}" class="btn btn-primary">Sign Up</a>
+        </div>
+    </nav>
+</header>
+
+<section class="hero">
+    <div class="container hero-content">
+        <div class="hero-text">
+            <h1><span>Master Your</span><br>Interview Skills</h1>
+            <p>AI-driven interview preparation with personalized feedback</p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('signup') }}" class="btn btn-primary">Start Practicing Free</a>
+                <a href="#" class="btn btn-outline">Watch Demo</a>
+            </div>
+        </div>
+
+        <div class="hero-image">
+            <img src="{{ url_for('static', filename='images/AI_Interview_Assistant.jpeg') }}"
+                 alt="AI Interview Assistant"
+                 class="hero-illustration">
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <div class="footer-bottom">
+            © 2025 IntelliPrep
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
