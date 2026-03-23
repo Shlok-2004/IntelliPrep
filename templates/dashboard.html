@@ -1,402 +1,655 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IntelliPrep - Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliPrep - Dashboard</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-    color: #1a202c;
-    overflow-x: hidden;
-}
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-.logo-img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    border-radius: 10px;
-}
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --secondary: #ec4899;
+            --accent: #14b8a6;
+            --bg-body: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.6);
+            --bg-card-hover: rgba(30, 41, 59, 0.8);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-glass: rgba(255, 255, 255, 0.05);
+        }
 
-/* TOP NAV */
-.top-nav {
-    background: white;
-    padding: 20px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-.logout-btn {
-    background: #ef4444;
-    color: white;
-    padding: 10px 18px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: 0.3s;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
-.logout-btn:hover {
-    background: #dc2626;
-}
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
+        h1,
+        h2,
+        h3,
+        .logo-text,
+        .stat-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-.logo-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+        /* ================= BACKGROUND GLOW ================= */
+        .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            top: -200px;
+            left: -200px;
+            z-index: -1;
+            animation: floatGlow 10s ease-in-out infinite alternate;
+        }
 
-.logo-text {
-    font-size: 22px;
-    font-weight: 800;
-}
+        .bg-glow-2 {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            bottom: -200px;
+            right: -200px;
+            z-index: -1;
+            animation: floatGlow 8s ease-in-out infinite alternate-reverse;
+        }
 
-.nav-links {
-    display: flex;
-    gap: 40px;
-}
+        @keyframes floatGlow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
 
-.nav-link {
-    text-decoration: none;
-    color: #64748b;
-    font-weight: 600;
-}
+            100% {
+                transform: translate(50px, 50px) scale(1.1);
+            }
+        }
 
-.nav-link.active {
-    color: #6366F1;
-    border-bottom: 3px solid #6366F1;
-}
+        /* ================= HEADER NAV ================= */
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-.user-section {
-    display: flex;
-    gap: 16px;
-}
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
 
-.notification-icon,
-.user-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: #f8fafc;
-}
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+        }
 
-.user-avatar {
-    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
-}
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-/* LAYOUT */
-.container {
-    display: flex;
-    min-height: calc(100vh - 84px);
-}
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
 
-.sidebar {
-    width: 280px;
-    background: white;
-    padding: 24px;
-    box-shadow: 2px 0 12px rgba(0,0,0,.04);
-}
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
 
-.sidebar-menu {
-    list-style: none;
-}
+        .btn-logout {
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            transition: all 0.3s;
+        }
 
-.menu-link {
-    display: block;
-    padding: 14px 16px;
-    margin-bottom: 8px;
-    border-radius: 12px;
-    text-decoration: none;
-    color: #64748b;
-    font-weight: 600;
-}
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
 
-.menu-link.active {
-    background: linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
-    color: white;
-}
+        /* ================= LAYOUT ================= */
+        .layout-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
 
-.main-content {
-    flex: 1;
-    padding: 40px;
-}
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: rgba(15, 23, 42, 0.4);
+            border-right: 1px solid var(--border-glass);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-/* WELCOME */
-.welcome-section {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 32px;
-}
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
 
-.welcome-text h1 {
-    font-size: 32px;
-    font-weight: 800;
-}
+        .nav-item i {
+            font-size: 18px;
+            width: 22px;
+            text-align: center;
+        }
 
-/* STATS */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin-bottom: 32px;
-}
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
 
-.stat-card {
-    background: white;
-    padding: 28px;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
-    cursor: pointer;
-}
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            color: var(--primary-light);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.05);
+        }
 
-.stat-icon {
-    font-size: 28px;
-    margin-bottom: 12px;
-}
+        /* MAIN DASHBOARD */
+        .main-content {
+            flex: 1;
+            padding: 40px 50px;
+            overflow-y: auto;
+        }
 
-.stat-value {
-    font-size: 40px;
-    font-weight: 800;
-}
+        .welcome-header {
+            margin-bottom: 40px;
+        }
 
-.stat-label {
-    color: #64748b;
-    font-weight: 600;
-}
+        .welcome-header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+        }
 
-/* CHARTS */
-.charts-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
-    margin-bottom: 32px;
-}
+        .welcome-header p {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
 
-.chart-card {
-    background: white;
-    padding: 28px;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
-}
+        /* STATS CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
 
-.chart-title {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 16px;
-}
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            padding: 28px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, background 0.3s;
+        }
 
-/* ACTIVITY */
-.activity-card {
-    background: white;
-    padding: 28px;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
-}
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: var(--bg-card-hover);
+        }
 
-.activity-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-}
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), #8B5CF6);
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+        }
 
-.activity-time {
-    color: #94a3b8;
-}
-</style>
+        .stat-icon.pink {
+            background: linear-gradient(135deg, #ec4899, #f43f5e);
+            box-shadow: 0 8px 16px rgba(236, 72, 153, 0.3);
+        }
+
+        .stat-icon.cyan {
+            background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+            box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3);
+        }
+
+        .stat-info h3 {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+        }
+
+        /* CHARTS SECTION */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .panel-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ACTIVITY SECTION */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 16px;
+            border: 1px solid var(--border-glass);
+            transition: background 0.3s;
+        }
+
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .activity-left i {
+            font-size: 20px;
+            color: var(--primary-light);
+        }
+
+        .activity-text h4 {
+            font-size: 15px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .activity-text p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .activity-score {
+            font-size: 16px;
+            font-weight: 700;
+            color: #10B981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .layout-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 15px;
+                flex-direction: row;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-glass);
+            }
+
+            .nav-item {
+                padding: 10px 14px;
+                white-space: nowrap;
+            }
+
+            .main-content {
+                padding: 24px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<nav class="top-nav">
-    <div class="logo-section">
-        <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" class="logo-img">
-        <span class="logo-text">IntelliPrep</span>
-    </div>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
 
-    <div class="nav-links">
-        <a href="{{ url_for('dashboard') }}" class="nav-link active">Dashboard</a>
-        <a href="{{ url_for('progress') }}" class="nav-link">Progress</a>
-        <a href="{{ url_for('resources') }}" class="nav-link">Resources</a>
-    </div>
-
-    <div class="user-section">
-        <div class="notification-icon"></div>
-        <div class="user-avatar"></div>
-
-        <a href="{{ url_for('logout') }}" class="logout-btn">
-            Logout
+    <header>
+        <a href="{{ url_for('landing') }}" class="logo">
+            <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo" class="logo-icon">
+            <span class="logo-text">IntelliPrep</span>
         </a>
+        <div class="user-nav">
+            <div class="user-avatar">{{ user_name[0].upper() }}</div>
+            <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <aside class="sidebar">
+            <a href="{{ url_for('dashboard') }}" class="nav-item active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="{{ url_for('interview') }}" class="nav-item"><i class="fas fa-laptop-code"></i> Practice</a>
+            <a href="{{ url_for('resume') }}" class="nav-item"><i class="fas fa-file-alt"></i> Resume Scanner</a>
+            <a href="{{ url_for('progress') }}" class="nav-item"><i class="fas fa-chart-line"></i> Progress</a>
+            <a href="{{ url_for('resources') }}" class="nav-item"><i class="fas fa-book-open"></i> Resources</a>
+        </aside>
+
+        <main class="main-content">
+            <div class="welcome-header">
+                <h1>Welcome back, {{ user_name }}! 👋</h1>
+                <p>Here is an overview of your interview preparation analytics and performance.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Interviews</h3>
+                        <div class="stat-value" data-target="{{ total_interviews }}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon pink"><i class="fas fa-bullseye"></i></div>
+                    <div class="stat-info">
+                        <h3>Average Score</h3>
+                        <div class="stat-value" data-target="{{ avg_score }}">0%</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon cyan"><i class="fas fa-file-contract"></i></div>
+                    <div class="stat-info">
+                        <h3>Latest Resume Score</h3>
+                        <div class="stat-value" data-target="{{ resume_score }}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="glass-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Score by Question Type</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="questionPieChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Resume Skills Analysis</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="resumePieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Recent Activity</h2>
+                </div>
+                <div class="activity-list">
+                    {% if activities|length == 0 %}
+                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">No recent interview activity
+                        found. Head over to the practice section to get started!</p>
+                    {% else %}
+                    {% for act in activities %}
+                    <div class="activity-item">
+                        <div class="activity-left">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="activity-text">
+                                <h4>{{ act[0] }}</h4>
+                                <p>{{ act[1] }}</p>
+                            </div>
+                        </div>
+                        <div class="activity-score">{{ act[2] }}%</div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+        </main>
     </div>
 
-</nav>
+    <!-- DATA PASSED FROM FLASK -->
+    <div id="flask-data" data-labels='{{ question_types | tojson }}' data-scores='{{ question_scores | tojson }}'
+        data-matched="{{ matched_count }}" data-missing="{{ missing_count }}" style="display: none;"></div>
 
-<div class="container">
+    <script>
+        const flaskData = document.getElementById('flask-data');
+        const questionLabels = JSON.parse(flaskData.dataset.labels || '[]');
+        const questionScores = JSON.parse(flaskData.dataset.scores || '[]');
+        const matchedCount = parseInt(flaskData.dataset.matched || 0, 10);
+        const missingCount = parseInt(flaskData.dataset.missing || 0, 10);
+    </script>
 
-<!-- <aside class="sidebar">
-    <ul class="sidebar-menu">
-        <li><a href="{{ url_for('dashboard') }}" class="menu-link active">Dashboard</a></li>
-        <li><a href="{{ url_for('progress') }}" class="menu-link">Progress</a></li>
-        <li><a href="{{ url_for('resources') }}" class="menu-link">Resources</a></li>
-    </ul>
-</aside> -->
+    <script>
+        // Numbers Animation
+        function animateCounters() {
+            document.querySelectorAll('.stat-value[data-target]').forEach(el => {
+                let target = parseFloat(el.dataset.target);
+                let isPercent = el.textContent.includes('%');
+                let current = 0;
+                let step = Math.max(0.1, target / 40);
 
-<aside class="sidebar">
-    <ul class="sidebar-menu">
+                let t = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        el.textContent = isPercent ? target + '%' : target;
+                        clearInterval(t);
+                    } else {
+                        el.textContent = isPercent ? Math.floor(current) + '%' : Math.floor(current);
+                    }
+                }, 20);
+            });
+        }
 
-        <li>
-            <a href="{{ url_for('dashboard') }}" class="menu-link active">
-                Dashboard
-            </a>
-        </li>
+        // Initialize Charts
+        function initCharts() {
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = "'Inter', sans-serif";
 
-        <li>
-            <a href="{{ url_for('interview') }}" class="menu-link">
-                Interview Practice
-            </a>
-        </li>
+            // 1. Question Type Pie Chart
+            const ctxPie1 = document.getElementById('questionPieChart').getContext('2d');
 
-        <li>
-            <a href="{{ url_for('resume') }}" class="menu-link">
-                Resume Analyzer
-            </a>
-        </li>
+            let hasData1 = questionScores.some(v => v > 0);
+            let labels1 = hasData1 ? questionLabels : ['No Data Yet'];
+            let data1 = hasData1 ? questionScores : [1];
+            let bg1 = hasData1 ? ['#6366F1', '#ec4899', '#0ea5e9', '#10B981', '#F59E0B'] : ['rgba(255,255,255,0.1)'];
 
-        <li>
-            <a href="{{ url_for('progress') }}" class="menu-link">
-                Progress
-            </a>
-        </li>
+            new Chart(ctxPie1, {
+                type: 'pie',
+                data: {
+                    labels: labels1,
+                    datasets: [{
+                        data: data1,
+                        backgroundColor: bg1,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, color: '#f8fafc', font: { size: 13 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    if (!hasData1) return ' No records found';
+                                    return ' Avg Score: ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
 
-        <li>
-            <a href="{{ url_for('resources') }}" class="menu-link">
-                Resources
-            </a>
-        </li>
+            // 2. Resume Skills Doughnut (Pie) Chart
+            const ctxPie2 = document.getElementById('resumePieChart').getContext('2d');
 
-    </ul>
-</aside>
+            let hasData2 = (matchedCount > 0 || missingCount > 0);
+            let data2 = hasData2 ? [matchedCount, missingCount] : [1];
+            let bg2 = hasData2 ? ['#10B981', '#ef4444'] : ['rgba(255,255,255,0.1)'];
+            let labels2 = hasData2 ? ['Matched Skills', 'Missing Skills'] : ['No Data Yet'];
 
+            new Chart(ctxPie2, {
+                type: 'doughnut',
+                data: {
+                    labels: labels2,
+                    datasets: [{
+                        data: data2,
+                        backgroundColor: bg2,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '0%', // Changed from doughnut (65%) to pie (0%) for consistency with prompt
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, color: '#f8fafc', font: { size: 13 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    if (!hasData2) return ' No active resume data';
+                                    return ' ' + context.label + ': ' + context.raw;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-<main class="main-content">
-
-<div class="welcome-section">
-    <div class="welcome-text">
-        <h1>Welcome back, {{ user_name }}</h1>
-        <p>Intermediate • Keep practicing</p>
-    </div>
-</div>
-
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon">💼</div>
-        <div class="stat-value" data-target="{{ total_interviews }}">0</div>
-        <div class="stat-label">Interviews</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon">📊</div>
-        <div class="stat-value" data-target="{{ avg_score }}">0%</div>
-        <div class="stat-label">Avg Score</div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon">📄</div>
-        <div class="stat-value">{{ resume_score }}</div>
-        <div class="stat-label">Resume Score</div>
-    </div>
-</div>
-
-<div class="charts-grid">
-    <div class="chart-card">
-        <h2 class="chart-title">Interview Trend</h2>
-        <div id="progressChart" style="height:300px;"></div>
-    </div>
-
-    <div class="chart-card">
-        <h2 class="chart-title">Skill Breakdown</h2>
-        <div id="skillDonut" style="height:300px;"></div>
-    </div>
-</div>
-
-<div class="activity-card">
-    <h2 class="chart-title">Recent Activity</h2>
-    {% for act in activities %}
-    <div class="activity-item">
-        <strong>{{ act[0] }}</strong>
-        <span>{{ act[2] }}%</span>
-        <span class="activity-time">{{ act[1] }}</span>
-    </div>
-    {% endfor %}
-</div>
-
-</main>
-</div>
-
-<script>
-function animateCounters(){
-document.querySelectorAll('.stat-value[data-target]').forEach(el=>{
-let target=parseInt(el.dataset.target);
-let isPercent=el.textContent.includes('%');
-let current=0;
-let step=Math.max(1,target/40);
-
-let t=setInterval(()=>{
-current+=step;
-if(current>=target){
-el.textContent=isPercent?target+'%':target;
-clearInterval(t);
-}else{
-el.textContent=isPercent?Math.floor(current)+'%':Math.floor(current);
-}
-},20);
-});
-}
-window.onload=animateCounters;
-</script>
-
-<script>
-const progressData = {{ progress | tojson }};   
-Plotly.newPlot("progressChart",[{
-    x: progressData.map(p => p[0]),   // HR, Technical, Aptitude
-    y: progressData.map(p => p[1]),   // Score values
-    type: "bar",
-    text: progressData.map(p => p[1] + "%"),
-    textposition: "outside",
-    marker: {
-        color: ["#6366F1", "#10B981", "#F59E0B"]
-    }
-}], {
-    paper_bgcolor: "transparent",
-    plot_bgcolor: "transparent",
-    yaxis: { title: "Score (%)" },
-    xaxis: { title: "Question Type" }
-});
-
-
-const skillData={{ skill_percent | tojson }};
-Plotly.newPlot("skillDonut",[{
-labels:skillData.map(s=>s[0]),
-values:skillData.map(s=>s[1]),
-hole:.6,
-type:"pie"
-}],{showlegend:false,paper_bgcolor:"transparent"});
-</script>
+        window.onload = () => {
+            animateCounters();
+            initCharts();
+        };
+    </script>
 
 </body>
+
 </html>

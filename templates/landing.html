@@ -1,38 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IntelliPrep - Master Your Interview Skills</title>
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --primary-dark: #4F46E5;
+            --secondary: #ec4899;
+            --accent: #14b8a6;
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(180deg, #f8f9fc 0%, #e8ecf4 100%);
-            color: #1a202c;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        p,
+        .nav-link,
+        .btn {
+            font-family: 'Inter', sans-serif;
         }
 
         .container {
-            max-width: 95%;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 60px;
+            padding: 0 5%;
+        }
+
+        /* ================= BACKGROUND ANIMATION ================= */
+        .bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            top: -200px;
+            left: -200px;
+            z-index: -1;
+            animation: floatGlow 10s ease-in-out infinite alternate;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            top: 300px;
+            right: -100px;
+            z-index: -1;
+            animation: floatGlow 8s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes floatGlow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(50px, 50px) scale(1.1);
+            }
         }
 
         /* ================= HEADER ================= */
-
         header {
-            background: white;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
             padding: 20px 0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        header.scrolled {
+            padding: 15px 0;
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
         nav {
@@ -46,19 +124,28 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
         }
 
         .logo-icon {
-            width: 36px;
-            height: 36px;
-            object-fit: contain;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
         }
 
         .logo-text {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a202c;
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .nav-links {
@@ -68,259 +155,832 @@
 
         .nav-link {
             text-decoration: none;
-            color: #64748b;
+            color: var(--text-muted);
             font-weight: 500;
             font-size: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: var(--primary);
+            transition: width 0.3s ease;
         }
 
         .nav-link:hover {
-            color: #6366F1;
+            color: #fff;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 12px;
+            gap: 16px;
         }
 
         .btn {
-            padding: 10px 24px;
-            border-radius: 20px;
+            padding: 12px 28px;
+            border-radius: 30px;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 15px;
             cursor: pointer;
             text-decoration: none;
             border: none;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-outline {
-            background: white;
-            color: #475569;
-            border: 2px solid #cbd5e1;
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn-outline:hover {
-            border-color: #6366F1;
-            color: #6366F1;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
         }
 
         /* ================= HERO ================= */
-
         .hero {
-            background: white;
-            padding: 60px 0 80px;
+            padding: 160px 0 100px;
+            position: relative;
         }
 
         .hero-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 80px;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 60px;
             align-items: center;
         }
 
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            color: var(--primary-light);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+
         .hero-text h1 {
-            font-size: 52px;
+            font-size: 64px;
             font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 16px;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
         }
 
         .hero-text h1 span {
-            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            background: linear-gradient(135deg, #6366F1 0%, #ec4899 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: inline-block;
         }
 
         .hero-text p {
-            font-size: 17px;
-            color: #475569;
-            margin-bottom: 32px;
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            line-height: 1.7;
+            max-width: 500px;
         }
 
         .hero-buttons {
             display: flex;
-            gap: 16px;
+            gap: 20px;
         }
 
         .hero-buttons .btn {
-            padding: 14px 32px;
-            font-size: 15px;
-            border-radius: 24px;
+            padding: 16px 36px;
+            font-size: 16px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 30px;
+        }
+
+        .stat h4 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .stat p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .hero-image {
+            position: relative;
             display: flex;
             justify-content: center;
+            perspective: 1000px;
         }
 
         .hero-illustration {
-            max-width: 900px;
-            height: 500px;
-            object-fit: contain;
-            border-radius: 32px;
+            width: 100%;
+            max-width: 550px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotateX(2deg) rotateY(-2deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotateX(-2deg) rotateY(2deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotateX(2deg) rotateY(-2deg);
+            }
         }
 
         /* ================= FEATURES ================= */
-
         .features {
-            padding: 80px 0;
-            background: linear-gradient(180deg, #fafbfc 0%, #f3f4f8 100%);
+            padding: 120px 0;
+            position: relative;
+            background: linear-gradient(180deg, var(--bg-body) 0%, rgba(15, 23, 42, 0.5) 100%);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            color: var(--secondary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 16px;
         }
 
         .section-title {
-            font-size: 32px;
+            font-size: 42px;
             font-weight: 800;
-            margin-bottom: 48px;
+            color: #fff;
+            margin-bottom: 20px;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 28px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
         }
 
         .feature-card {
-            background: white;
-            padding: 36px 28px;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px 30px;
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
         }
 
         .feature-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
-            font-size: 26px;
+            margin-bottom: 24px;
+            font-size: 28px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-light);
+            transition: all 0.3s ease;
         }
 
-        .icon-cyan { background: #e0f2fe; }
-        .icon-purple { background: #f3e8ff; }
-        .icon-indigo { background: #e0e7ff; }
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
 
         /* ================= HOW IT WORKS ================= */
-
         .how-it-works {
-            padding: 80px 0;
-            background: linear-gradient(135deg, #f8f9fc 0%, #e8ecf4 100%);
+            padding: 100px 0 140px;
+            background: var(--bg-body);
         }
 
-        .section-title-center {
-            text-align: center;
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 60px;
-        }
-
-        .how-content {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 60px;
-            background: white;
-            padding: 50px;
-            border-radius: 20px;
-        }
-
-        .steps-wrapper {
-            display: flex;
-            justify-content: space-around;
+        .timeline {
             position: relative;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .step {
-            text-align: center;
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 32px;
+            height: 100%;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .step-number {
-            width: 56px;
-            height: 56px;
+        .timeline-item {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 60px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-icon {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
             border-radius: 50%;
-            border: 4px solid #8B5CF6;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            color: #8B5CF6;
+            font-size: 24px;
+            color: var(--primary-light);
+            z-index: 2;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .timeline-content {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            flex-grow: 1;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            background: rgba(30, 41, 59, 0.6);
+            transform: translateX(10px);
+        }
+
+        .timeline-content h3 {
+            font-size: 24px;
+            color: #fff;
             margin-bottom: 12px;
         }
 
-        /* ================= FOOTER ================= */
+        .timeline-content p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
 
-        footer {
+        /* ================= CTA SECTION ================= */
+        .cta-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #7e22ce 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-section h2 {
+            font-size: 40px;
+            color: white;
+            font-weight: 800;
+            margin-bottom: 24px;
+        }
+
+        .cta-section p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-inline: auto;
+        }
+
+        .cta-section .btn-primary {
             background: white;
-            border-top: 1px solid #e2e8f0;
-            padding: 50px 0 30px;
+            color: var(--primary-dark);
+            font-size: 18px;
+            padding: 18px 40px;
+        }
+
+        /* ================= FOOTER ================= */
+        footer {
+            background: #0b1121;
+            padding: 80px 0 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 60px;
+            margin-bottom: 60px;
+        }
+
+        .footer-logo {
+            margin-bottom: 20px;
+        }
+
+        .footer-desc {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            max-width: 300px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 16px;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-light);
         }
 
         .footer-bottom {
             text-align: center;
-            color: #94a3b8;
+            color: rgba(255, 255, 255, 0.4);
             font-size: 14px;
-            padding-top: 30px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* ================= UTILITIES & ANIMATIONS ================= */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 991px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-text p,
+            .hero-buttons {
+                margin-inline: auto;
+                justify-content: center;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .hero-image {
+                margin-top: 40px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-text h1 {
+                font-size: 48px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline::before {
+                left: 24px;
+            }
+
+            .timeline-item {
+                gap: 20px;
+            }
+
+            .timeline-icon {
+                width: 48px;
+                height: 48px;
+                min-width: 48px;
+                font-size: 20px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<header>
-    <nav class="container">
-        <a href="{{ url_for('landing') }}" class="logo">
-            <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo" class="logo-icon">
-            <span class="logo-text">IntelliPrep</span>
-        </a>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
 
-        <div class="nav-links">
-            <a href="#features" class="nav-link">Features</a>
-            <a href="#about" class="nav-link">About</a>
-        </div>
+    <header id="header">
+        <nav class="container">
+            <a href="{{ url_for('landing') }}" class="logo">
+                <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo"
+                    class="logo-icon">
+                <span class="logo-text">IntelliPrep</span>
+            </a>
 
-        <div class="nav-buttons">
-            <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
-            <a href="{{ url_for('signup') }}" class="btn btn-primary">Sign Up</a>
-        </div>
-    </nav>
-</header>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#how-it-works" class="nav-link">How it Works</a>
+                <a href="#about" class="nav-link">About</a>
+            </div>
 
-<section class="hero">
-    <div class="container hero-content">
-        <div class="hero-text">
-            <h1><span>Master Your</span><br>Interview Skills</h1>
-            <p>AI-driven interview preparation with personalized feedback</p>
-            <div class="hero-buttons">
-                <a href="{{ url_for('signup') }}" class="btn btn-primary">Start Practicing Free</a>
-                <a href="#" class="btn btn-outline">Watch Demo</a>
+            <div class="nav-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-primary">Sign Up <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-text reveal active">
+                <div class="hero-badge">Next-Gen Interview Platform</div>
+                <h1>Pass Your Next Interview with <span>Absolute Confidence</span></h1>
+                <p>Experience an AI-driven interview coach that mimics real-world scenarios, analyzes your performance,
+                    and provides actionable, personalized feedback to secure your dream job.</p>
+                <div class="hero-buttons">
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary">Start Practicing Free</a>
+                    <a href="#how-it-works" class="btn btn-outline"><i class="fas fa-play-circle"></i> See How it
+                        Works</a>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="stat">
+                        <h4>95%</h4>
+                        <p>Success Rate</p>
+                    </div>
+                    <div class="stat">
+                        <h4>500+</h4>
+                        <p>Roles Covered</p>
+                    </div>
+                    <div class="stat">
+                        <h4>24/7</h4>
+                        <p>AI Availability</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-image reveal active">
+                <img src="{{ url_for('static', filename='images/AI_Interview_Assistant.jpeg') }}"
+                    alt="AI Interview Assistant Dashboard" class="hero-illustration">
             </div>
         </div>
+    </section>
 
-        <div class="hero-image">
-            <img src="{{ url_for('static', filename='images/AI_Interview_Assistant.jpeg') }}"
-                 alt="AI Interview Assistant"
-                 class="hero-illustration">
-        </div>
-    </div>
-</section>
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Why IntelliPrep?</span>
+                <h2 class="section-title">Everything you need to succeed</h2>
+                <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto; font-size: 18px;">
+                    Advanced AI technology perfectly tailored to elevate your interviewing skills and boost your
+                    confidence.
+                </p>
+            </div>
 
-<footer>
-    <div class="container">
-        <div class="footer-bottom">
-            © 2025 IntelliPrep
+            <div class="features-grid">
+                <div class="feature-card reveal" style="transition-delay: 100ms;">
+                    <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                    <h3>Dynamic AI Responses</h3>
+                    <p>Engage in realistic conversational flow with an AI interviewer that adapts its follow-up
+                        questions based dynamically on your answers.</p>
+                </div>
+
+                <div class="feature-card reveal" style="transition-delay: 200ms;">
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>In-Depth Analytics</h3>
+                    <p>Receive comprehensive feedback on clarity, pacing, keyword relevance, and technical accuracy
+                        instantly after every session.</p>
+                </div>
+
+                <div class="feature-card reveal" style="transition-delay: 300ms;">
+                    <div class="feature-icon"><i class="fas fa-video"></i></div>
+                    <h3>Mock Video Interviews</h3>
+                    <p>Simulate the exact pressure of a remote video interview environment, completely equipped with
+                        behavioral and technical challenges.</p>
+                </div>
+
+                <div class="feature-card reveal" style="transition-delay: 400ms;">
+                    <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+                    <h3>Role-Specific Tracks</h3>
+                    <p>Whether you're a Software Engineer, Product Manager, or Data Analyst, practice with questions
+                        specifically curated for your targeted industry.</p>
+                </div>
+
+                <div class="feature-card reveal" style="transition-delay: 500ms;">
+                    <div class="feature-icon"><i class="fas fa-history"></i></div>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your performance improvements over time with an intuitive dashboard that highlights your
+                        strengths and areas needing focus.</p>
+                </div>
+
+                <div class="feature-card reveal" style="transition-delay: 600ms;">
+                    <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                    <h3>Instant Feedback</h3>
+                    <p>Don't wait days for human feedback. Get actionable insights and suggested answer structures the
+                        moment your interview concludes.</p>
+                </div>
+            </div>
         </div>
-    </div>
-</footer>
+    </section>
+
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Simple Process</span>
+                <h2 class="section-title">How IntelliPrep Works</h2>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item reveal">
+                    <div class="timeline-icon">1</div>
+                    <div class="timeline-content">
+                        <h3>Set Up Your Profile</h3>
+                        <p>Enter your target job role, experience level, and upload your resume. Our AI custom-tailors
+                            the interview experience to match your specific career goals.</p>
+                    </div>
+                </div>
+                <div class="timeline-item reveal">
+                    <div class="timeline-icon">2</div>
+                    <div class="timeline-content">
+                        <h3>Take a Mock Interview</h3>
+                        <p>Engage in a live interactive interview. Face algorithmic coding challenges, system design
+                            discussions, or intense behavioral questions.</p>
+                    </div>
+                </div>
+                <div class="timeline-item reveal">
+                    <div class="timeline-icon">3</div>
+                    <div class="timeline-content">
+                        <h3>Review Detailed Feedback</h3>
+                        <p>Within seconds, receive a glowing transcript, performance metrics, and pinpointed suggestions
+                            on how to articulate your answers more effectively next time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container cta-content reveal">
+            <h2>Ready to land your dream job?</h2>
+            <p>Join thousands of candidates who have aced their interviews and received top-tier offers using
+                IntelliPrep. Start practicing today, for free.</p>
+            <a href="{{ url_for('signup') }}" class="btn btn-primary">Create Your Free Account</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-info">
+                    <a href="{{ url_for('landing') }}" class="logo footer-logo">
+                        <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo"
+                            class="logo-icon">
+                        <span class="logo-text">IntelliPrep</span>
+                    </a>
+                    <p class="footer-desc">Empowering candidates with AI-driven interview preparation to build
+                        confidence and secure life-changing opportunities.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h4 class="footer-title">Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How it Works</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Success Stories</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h4 class="footer-title">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Interview Guides</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Question Bank</a></li>
+                        <li><a href="#">Resume Tips</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h4 class="footer-title">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 IntelliPrep. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Header Scroll Effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Reveal Animations using IntersectionObserver
+        const revealElements = document.querySelectorAll('.reveal');
+        const timelineItems = document.querySelectorAll('.timeline-item');
+
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    if (entry.target.classList.contains('timeline-item')) {
+                        entry.target.classList.add('visible');
+                    }
+                    observer.unobserve(entry.target); // Optional: Stop observing after reveal
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+        timelineItems.forEach(el => revealObserver.observe(el));
+    </script>
 
 </body>
+
 </html>

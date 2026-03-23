@@ -1,23 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IntelliPrep - Create Account</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --primary-dark: #4F46E5;
+            --secondary: #ec4899;
+            --bg-body: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #dfe3eb, #cdd3de);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        .logo-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* ================= BACKGROUND ANIMATION ================= */
+        .bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            top: -100px;
+            left: -200px;
+            z-index: -1;
+            animation: floatGlow 10s ease-in-out infinite alternate;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            bottom: -100px;
+            right: -100px;
+            z-index: -1;
+            animation: floatGlow 8s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes floatGlow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(50px, 50px) scale(1.1);
+            }
         }
 
         .container {
@@ -25,150 +94,422 @@
             width: 100%;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 32px;
+            gap: 40px;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 10px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+            z-index: 1;
         }
 
-        .signup-card {
-            background: white;
-            padding: 44px;
-            border-radius: 28px;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.1);
+        /* ================= SIGNUP SECTION ================= */
+        .signup-section {
+            padding: 40px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            margin-bottom: 40px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .signup-header {
             font-size: 32px;
             font-weight: 700;
-            margin-bottom: 28px;
+            margin-bottom: 8px;
+            color: #fff;
         }
 
-        .input-group { margin-bottom: 20px; }
+        .signup-subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 32px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
 
         .form-label {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            margin-bottom: 6px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
             display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-icon {
+            position: absolute;
+            bottom: 15px;
+            left: 16px;
+            color: var(--text-muted);
+            font-size: 16px;
+            transition: color 0.3s ease;
         }
 
         .input-field {
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px 16px 14px 46px;
             border-radius: 12px;
-            border: 2px solid #e2e8f0;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
             font-size: 15px;
             outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field::placeholder {
+            color: rgba(148, 163, 184, 0.5);
         }
 
         .input-field:focus {
-            border-color: #7c5fc7;
-            box-shadow: 0 0 0 4px rgba(124,95,199,0.15);
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        .input-field:focus+.input-icon {
+            color: var(--primary);
         }
 
         .checkbox-group {
             display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 32px;
             font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .checkbox-group a {
+            color: var(--primary-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .checkbox-group a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        /* Custom Checkbox */
+        .custom-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+            margin-top: 2px;
+        }
+
+        .custom-checkbox:checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .custom-checkbox:after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: white;
+            font-size: 12px;
+            display: none;
+        }
+
+        .custom-checkbox:checked:after {
+            display: block;
         }
 
         .btn-create {
             width: 100%;
             padding: 16px;
-            border-radius: 50px;
+            border-radius: 12px;
             border: none;
             font-size: 16px;
             font-weight: 600;
-            background: linear-gradient(135deg,#6b5fc7,#7c5fc7);
+            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
             color: white;
             cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-create::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .btn-create:hover::before {
+            left: 100%;
         }
 
         .btn-create:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(107,95,199,0.4);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
         }
 
         .login-section {
-            margin-top: 20px;
-            font-size: 14px;
+            margin-top: 24px;
+            font-size: 15px;
             text-align: center;
+            color: var(--text-muted);
         }
 
         .login-link {
-            color: #7c5fc7;
+            color: var(--primary-light);
             font-weight: 600;
             text-decoration: none;
+            margin-left: 4px;
+            transition: color 0.3s ease;
         }
 
+        .login-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        /* ================= ILLUSTRATION SECTION ================= */
         .illustration-card {
-            background: white;
-            border-radius: 28px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.05));
+            border-radius: 24px;
             padding: 40px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            height: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .illustration-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         .illustration-card img {
-            max-width: 100%;
+            max-width: 90%;
             height: auto;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .illustration-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .illustration-text h3 {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .illustration-text p {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 300px;
         }
 
         @media (max-width: 900px) {
-            .container { grid-template-columns: 1fr; }
-            .illustration-card { display: none; }
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                padding: 20px;
+            }
+
+            .illustration-card {
+                display: none;
+            }
+
+            .signup-section {
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<div class="container">
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
 
-    <!-- SIGNUP CARD -->
-    <div class="signup-card">
-        <h1 class="signup-header">Create Account 🚀</h1>
+    <div class="container">
 
-        <!-- ✅ REAL FLASK FORM -->
-        <form method="POST" action="{{ url_for('signup') }}">
+        <!-- SIGNUP CARD -->
+        <div class="signup-section">
+            <a href="{{ url_for('landing') }}" class="logo">
+                <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo"
+                    class="logo-icon">
+                <span class="logo-text">IntelliPrep</span>
+            </a>
 
-            <div class="input-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" name="fullname" class="input-field" required>
+            <h1 class="signup-header">Create Account <span
+                    style="display:inline-block; animation: wave 2.5s infinite; transform-origin: 70% 70%;">👋</span>
+            </h1>
+            <p class="signup-subtitle">Start your journey to interview mastery today.</p>
+
+            <!-- ✅ REAL FLASK FORM -->
+            <form method="POST" action="{{ url_for('signup') }}">
+
+                <div class="input-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="fullname" class="input-field" placeholder="John Doe" required>
+                    <i class="fas fa-user input-icon"></i>
+                </div>
+
+                <div class="input-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="input-field" placeholder="john@example.com" required>
+                    <i class="fas fa-envelope input-icon"></i>
+                </div>
+
+                <div class="input-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="input-field" placeholder="Create a strong password"
+                        minlength="6" required>
+                    <i class="fas fa-lock input-icon"></i>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" class="custom-checkbox" required id="terms">
+                    <label for="terms">I agree to the <a href="#">Terms of Service</a> & <a href="#">Privacy
+                            Policy</a></label>
+                </div>
+
+                <button type="submit" class="btn-create">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="login-section">
+                Already have an account?
+                <a href="{{ url_for('login') }}" class="login-link">Login here</a>
             </div>
-
-            <div class="input-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" name="email" class="input-field" required>
-            </div>
-
-            <div class="input-group">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="input-field" minlength="6" required>
-            </div>
-
-            <div class="checkbox-group">
-                <input type="checkbox" required>
-                <span>I agree to Terms & Conditions</span>
-            </div>
-
-            <button type="submit" class="btn-create">
-                Create Account
-            </button>
-        </form>
-
-        <div class="login-section">
-            Already have an account?
-            <a href="{{ url_for('login') }}" class="login-link">Login</a>
         </div>
+
+        <!-- ILLUSTRATION -->
+        <div class="illustration-card">
+            <img src="{{ url_for('static', filename='images/AI_Collaboration1.jpeg') }}" alt="AI Collaboration">
+            <div class="illustration-text">
+                <h3>Practice Makes Perfect</h3>
+                <p>Join thousands of professionals who have secured their dream jobs with our AI-driven interview
+                    feedback.</p>
+            </div>
+        </div>
+
     </div>
 
-    <!-- ILLUSTRATION -->
-    <div class="illustration-card">
-        <img src="{{ url_for('static', filename='images/AI_Collaboration1.jpeg') }}" alt="AI Collaboration">
-    </div>
+    <style>
+        @keyframes wave {
 
-</div>
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            10% {
+                transform: rotate(14deg);
+            }
+
+            20% {
+                transform: rotate(-8deg);
+            }
+
+            30% {
+                transform: rotate(14deg);
+            }
+
+            40% {
+                transform: rotate(-4deg);
+            }
+
+            50% {
+                transform: rotate(10deg);
+            }
+
+            60% {
+                transform: rotate(0deg);
+            }
+        }
+    </style>
 
 </body>
+
 </html>

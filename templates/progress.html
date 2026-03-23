@@ -1,88 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IntelliPrep - Progress Tracking</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliPrep - Progress Analytics</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-body{
-font-family:'Inter',sans-serif;
-background:linear-gradient(135deg,#f5f7fa 0%,#e8ecf1 100%);
-color:#1a202c;
-}
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --secondary: #ec4899;
+            --bg-body: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.6);
+            --bg-card-hover: rgba(30, 41, 59, 0.8);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-glass: rgba(255, 255, 255, 0.05);
+        }
 
-.logo-img{
-    width:40px;
-    height:40px;
-    object-fit:contain;
-    border-radius:10px;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
-/* TOP NAV */
-.top-nav{background:white;padding:20px 40px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.04);position:sticky;top:0;z-index:100;}
-.logo-section{display:flex;align-items:center;gap:12px;}
-.logo{width:40px;height:40px;background:linear-gradient(135deg,#06BED4 0%,#6366F1 100%);border-radius:10px;}
-.logo-text{font-size:22px;font-weight:800;}
-.user-avatar{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);}
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-/* LAYOUT */
-.container{display:flex;min-height:calc(100vh - 84px);}
-.sidebar{width:280px;background:white;padding:24px;box-shadow:2px 0 12px rgba(0,0,0,.04);}
-.menu-link{display:block;padding:14px 16px;margin-bottom:8px;border-radius:12px;text-decoration:none;color:#64748b;font-weight:600;transition:.3s;}
-.menu-link.active{background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);color:white;}
-.menu-link:hover{background:#f8fafc;}
+        h1, h2, h3, .logo-text, .stat-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-.main-content{flex:1;padding:40px;animation:fadeInUp .6s ease;}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        /* Background Glow */
+        .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            top: -200px;
+            left: -200px;
+            z-index: -1;
+            animation: floatGlow 10s ease-in-out infinite alternate;
+        }
 
-/* HEADER */
-.page-header h1{font-size:30px;font-weight:800;margin-bottom:24px}
+        .bg-glow-2 {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            bottom: -200px;
+            right: -200px;
+            z-index: -1;
+            animation: floatGlow 8s ease-in-out infinite alternate-reverse;
+        }
 
-/* CARDS */
-.card{background:white;padding:26px;border-radius:18px;box-shadow:0 4px 12px rgba(0,0,0,.05);margin-bottom:24px}
-</style>
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        /* Nav */
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+            object-fit: cover;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .layout-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: rgba(15, 23, 42, 0.4);
+            border-right: 1px solid var(--border-glass);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            color: var(--primary-light);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 40px 50px;
+            overflow-y: auto;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+
+        /* Glass Panel */
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 24px;
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Grid Layout for Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        canvas {
+            width: 100% !important;
+            max-height: 350px;
+        }
+
+        /* History Table */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        
+        .history-table th {
+            padding: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 12px;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(15, 23, 42, 0.4);
+        }
+        
+        .history-table td {
+            padding: 16px;
+            color: #fff;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .history-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+            transition: 0.3s;
+        }
+        
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        
+        .badge-green { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-orange { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-red { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        
+        .feedback-text {
+            color: var(--text-muted);
+            font-size: 13px;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    </style>
 </head>
 
 <body>
 
-<nav class="top-nav">
-<div class="logo-section">
-<img src="{{ url_for('static', filename='images/Logo.jpeg') }}" class="logo-img">
-<span class="logo-text">IntelliPrep</span>
-</div>
-<div class="user-avatar"></div>
-</nav>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
 
-<div class="container">
+    <header>
+        <a href="{{ url_for('landing') }}" class="logo">
+            <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="Logo" class="logo-icon">
+            <span class="logo-text">IntelliPrep</span>
+        </a>
+    </header>
 
-<aside class="sidebar">
-<a href="{{ url_for('dashboard') }}" class="menu-link">Dashboard</a>
-<a href="{{ url_for('interview') }}" class="menu-link">Interview Practice</a>
-<a href="{{ url_for('resume') }}" class="menu-link">Resume Analyzer</a>
-<a href="{{ url_for('progress') }}" class="menu-link active">Progress</a>
-<a href="{{ url_for('resources') }}" class="menu-link">Resources</a>
-</aside>
+    <div class="layout-container">
+        <aside class="sidebar">
+            <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="{{ url_for('interview') }}" class="nav-item"><i class="fas fa-laptop-code"></i> Practice</a>
+            <a href="{{ url_for('resume') }}" class="nav-item"><i class="fas fa-file-alt"></i> Resume Analyzer</a>
+            <a href="{{ url_for('progress') }}" class="nav-item active"><i class="fas fa-chart-line"></i> Progress</a>
+            <a href="{{ url_for('resources') }}" class="nav-item"><i class="fas fa-book"></i> Resources</a>
+        </aside>
 
-<main class="main-content">
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Progress Analytics <i class="fas fa-chart-line" style="margin-left:8px; color:var(--primary-light)"></i></h1>
+            </div>
 
-<div class="page-header">
-<h1>📊 Progress Tracking</h1>
-</div>
+            <div class="charts-grid">
+                <!-- Trend Chart -->
+                <div class="glass-panel" style="margin-bottom:0;">
+                    <div class="panel-title"><i class="fas fa-arrow-trend-up" style="color:var(--primary)"></i> Performance Trend</div>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                
+                <!-- Radar Chart -->
+                <div class="glass-panel" style="margin-bottom:0;">
+                    <div class="panel-title"><i class="fas fa-spider" style="color:var(--secondary)"></i> Skill Competency</div>
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
 
-<div class="card">
-<h3>Your Learning Journey</h3><br>
-<p style="color:#64748b;">Track your interview preparation progress, skill improvements, and performance trends over time.</p>
-<br><br>
-<p style="color:#94a3b8;font-style:italic;">Detailed progress analytics coming soon...</p>
-</div>
+            <!-- Detailed History -->
+            <div class="glass-panel">
+                <div class="panel-title"><i class="fas fa-list-check" style="color:#10B981"></i> Historical Session Log</div>
+                
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Role Target</th>
+                            <th>Category</th>
+                            <th>Score</th>
+                            <th>AI Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if history %}
+                            {% for row in history %}
+                                <tr>
+                                    <td style="color:var(--text-muted)">{{ row.date }}</td>
+                                    <td style="font-weight:600">{{ row.role }}</td>
+                                    <td>{{ row.type }}</td>
+                                    <td>
+                                        {% if row.score >= 80 %}
+                                            <span class="badge badge-green">{{ row.score }}%</span>
+                                        {% elif row.score >= 50 %}
+                                            <span class="badge badge-orange">{{ row.score }}%</span>
+                                        {% else %}
+                                            <span class="badge badge-red">{{ row.score }}%</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><div class="feedback-text" title="{{ row.feedback }}">{{ row.feedback }}</div></td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">
+                                    No interview sessions recorded yet. Start practicing to see your progress!
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
 
-</main>
-</div>
+        </main>
+    </div>
 
+    <script id="trendDatesData" type="application/json">
+        {{ trend_dates | tojson | safe }}
+    </script>
+    <script id="trendScoresData" type="application/json">
+        {{ trend_scores | tojson | safe }}
+    </script>
+    <script id="radarDictData" type="application/json">
+        {{ radar_data | tojson | safe }}
+    </script>
+
+    <script>
+        // Setup raw data injected from Flask Python
+        const trendDates = JSON.parse(document.getElementById('trendDatesData').textContent);
+        const trendScores = JSON.parse(document.getElementById('trendScoresData').textContent);
+        const radarDict = JSON.parse(document.getElementById('radarDictData').textContent);
+        
+        // Ensure chart defaults are dark-theme friendly
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter';
+
+        // 1. Render Trend Line Chart
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        
+        let gradientLine = ctxTrend.createLinearGradient(0, 0, 0, 400);
+        gradientLine.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+        gradientLine.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: trendDates.length ? trendDates : ['Day 1', 'Day 2', 'Day 3'],
+                datasets: [{
+                    label: 'Avg Score (%)',
+                    data: trendScores.length ? trendScores : [0, 0, 0],
+                    borderColor: '#6366F1',
+                    borderWidth: 3,
+                    backgroundColor: gradientLine,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#8B5CF6',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 2. Render Radar Chart
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Technical', 'HR', 'Aptitude'],
+                datasets: [{
+                    label: 'Competency Level',
+                    data: [radarDict['Technical'] || 0, radarDict['HR'] || 0, radarDict['Aptitude'] || 0],
+                    backgroundColor: 'rgba(236, 72, 153, 0.2)', // secondary pink
+                    borderColor: '#ec4899',
+                    pointBackgroundColor: '#ec4899',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#ec4899',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        pointLabels: { color: '#f8fafc', font: { size: 13, weight: '600' } },
+                        ticks: { display: false, min: 0, max: 100 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+    </script>
 </body>
 </html>

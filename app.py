@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_mysqldb import MySQL
 import pandas as pd
 import os
+import re
 import tempfile
 from intelliprep_resume_engine.core.resume_parser import extract_resume_text, clean_text
 from intelliprep_resume_engine.core.role_profiles import ROLE_SKILLS, ROLE_CRITICAL_SKILLS
@@ -101,6 +102,26 @@ def signup():
     return render_template("signup.html")
 
 
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form.get("email")
+        new_password = request.form.get("new_password")
+
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT user_id FROM users WHERE email=%s", (email,))
+        if cursor.fetchone():
+            cursor.execute("UPDATE users SET password=%s WHERE email=%s", (new_password, email))
+            mysql.connection.commit()
+            cursor.close()
+            return render_template("forgot_password.html", success="Password successfully updated! You can now login.")
+        else:
+            cursor.close()
+            return render_template("forgot_password.html", error="Email address not found.")
+
+    return render_template("forgot_password.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -139,26 +160,22 @@ def dashboard():
     avg_score = cursor.fetchone()[0]
     avg_score = round(avg_score, 1) if avg_score else 0
 
-    # INTERVIEW TREND GRAPH
+    # NEW: PROGRESS BY QUESTION TYPE (for Pie Chart)
     cursor.execute("""
-        SELECT s.session_id, AVG(er.final_score)
+        SELECT sq.question_type, AVG(er.final_score)
         FROM interview_sessions s
         JOIN session_questions sq ON s.session_id = sq.session_id
         JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
         JOIN evaluation_results er ON ua.answer_id = er.answer_id
         WHERE s.user_id = %s
-        GROUP BY s.session_id
-        ORDER BY s.session_id
+        GROUP BY sq.question_type
     """, (user_id,))
-    trend_data = cursor.fetchall()
+    question_type_data = cursor.fetchall()
+    
+    question_types = [row[0] for row in question_type_data] if question_type_data else ["None"]
+    question_scores = [round(row[1], 1) for row in question_type_data] if question_type_data else [0]
 
-    progress = [
-        [i + 1, round(score, 1)]
-        for i, (_, score) in enumerate(trend_data)
-        if score is not None
-    ]
-
-    # ✅ RESTORED RESUME SCORE
+    # RESUME SCORE (Latest)
     cursor.execute("""
         SELECT ats_score
         FROM resume_analysis
@@ -169,6 +186,42 @@ def dashboard():
     resume_row = cursor.fetchone()
     resume_score = resume_row[0] if resume_row else 0
 
+    # RESUME ANALYSIS CHART (Matched VS Missing from latest resume) 
+    cursor.execute("""
+        SELECT matched_skills, missing_skills
+        FROM resume_analysis
+        WHERE user_id = %s
+        ORDER BY created_at DESC
+        LIMIT 1
+    """, (user_id,))
+    latest_resume = cursor.fetchone()
+    
+    matched_count = 0
+    missing_count = 0
+    if latest_resume:
+        matched_str = latest_resume[0]
+        missing_str = latest_resume[1]
+        matched_count = len([s for s in matched_str.split(",") if s.strip()]) if matched_str else 0
+        missing_count = len([s for s in missing_str.split(",") if s.strip()]) if missing_str else 0
+
+    # RECENT ACTIVITY
+    cursor.execute("""
+        SELECT sq.question_type, s.start_time, er.final_score
+        FROM interview_sessions s
+        JOIN session_questions sq ON s.session_id = sq.session_id
+        JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
+        JOIN evaluation_results er ON ua.answer_id = er.answer_id
+        WHERE s.user_id = %s
+        ORDER BY s.start_time DESC
+        LIMIT 4
+    """, (user_id,))
+    recent_activities = cursor.fetchall()
+    
+    activities = [
+        [row[0].capitalize() + " Question", row[1].strftime("%b %d, %Y") if hasattr(row[1], "strftime") else "Recently", round(row[2],1)]
+        for row in recent_activities
+    ]
+
     cursor.close()
 
     return render_template(
@@ -177,9 +230,11 @@ def dashboard():
         total_interviews=total_interviews,
         avg_score=avg_score,
         resume_score=resume_score,
-        progress=progress,
-        skill_percent=[],
-        activities=[]
+        question_types=question_types,
+        question_scores=question_scores,
+        matched_count=matched_count,
+        missing_count=missing_count,
+        activities=activities
     )
 
 
@@ -257,10 +312,26 @@ def start_interview():
 
     first_question = filtered_df.loc[classified_indices[0], "question"]
 
-    return jsonify({
+    response_data = {
         "question_number": 1,
-        "question": first_question
-    })
+        "question": first_question,
+        "is_mcq": False
+    }
+
+    if question_type.lower() == "aptitude":
+        q_text = str(filtered_df.loc[classified_indices[0], "question"])
+        match = re.search(r'(.*?)\s*\([Aa]\)\s*(.*?)\s*\([Bb]\)\s*(.*?)\s*\([Cc]\)\s*(.*?)\s*\([Dd]\)\s*(.*)', q_text)
+        if match:
+            response_data["question"] = match.group(1).strip()
+            response_data["is_mcq"] = True
+            response_data["options"] = {
+                "A": match.group(2).strip(),
+                "B": match.group(3).strip(),
+                "C": match.group(4).strip(),
+                "D": match.group(5).strip()
+            }
+
+    return jsonify(response_data)
 
 
 
@@ -305,10 +376,26 @@ def next_question():
     session["session_question_id"] = cur.lastrowid
     cur.close()
 
-    return jsonify({
+    response_data = {
         "question_number": idx + 1,
-        "question": question
-    })
+        "question": question,
+        "is_mcq": False
+    }
+
+    if session["question_type"].lower() == "aptitude":
+        q_text = str(filtered_df.loc[question_index, "question"])
+        match = re.search(r'(.*?)\s*\([Aa]\)\s*(.*?)\s*\([Bb]\)\s*(.*?)\s*\([Cc]\)\s*(.*?)\s*\([Dd]\)\s*(.*)', q_text)
+        if match:
+            response_data["question"] = match.group(1).strip()
+            response_data["is_mcq"] = True
+            response_data["options"] = {
+                "A": match.group(2).strip(),
+                "B": match.group(3).strip(),
+                "C": match.group(4).strip(),
+                "D": match.group(5).strip()
+            }
+
+    return jsonify(response_data)
 
 @app.route("/evaluate", methods=["POST"])
 def evaluate():
@@ -319,41 +406,48 @@ def evaluate():
     user_answer = request.form.get("answer", "")
 
     filtered_df = df[
-        (df["job_role"].str.lower() == session["job_role"].lower()) &
-        (df["question_type"].str.lower() == session["question_type"].lower())
+        (df["job_role"].str.strip().str.lower() == session["job_role"].lower()) &
+        (df["question_type"].str.strip().str.lower() == session["question_type"].lower())
     ].reset_index(drop=True)
 
     question_idx = session["questions"][session["current_index"]]
     ideal_answer = filtered_df.loc[question_idx, "answer"]
 
     # -----------------------------
-    # TEXT MODEL
-    # -----------------------------
-    text_result = evaluate_answer(user_answer, ideal_answer)
-    text_score_percent = round(text_result["final_score"] * 100, 2)
-
-    # -----------------------------
-    # HR MODEL (if HR selected)
+    # EVALUATION
     # -----------------------------
     hr_score = 0
 
-    if session["question_type"].lower() == "hr" and "video" in request.files:
-        video_file = request.files["video"]
+    if session["question_type"].lower() == "aptitude":
+        q_user_ans = str(user_answer).strip().lower()
+        q_ideal_ans_clean = str(ideal_answer).strip().lower().replace("(", "").replace(")", "")
+        correct = q_user_ans == q_ideal_ans_clean
+        text_score_percent = 100 if correct else 0
+        text_result = {
+            "final_score": 1.0 if correct else 0.0,
+            "semantic_similarity": 1.0 if correct else 0.0,
+            "keyword_score": 1.0 if correct else 0.0,
+            "feedback": "Correct Answer! Great job." if correct else f"Incorrect. The correct answer was Option {str(ideal_answer).upper()}."
+        }
+    else:
+        text_result = evaluate_answer(user_answer, ideal_answer)
+        text_score_percent = round(text_result["final_score"] * 100, 2)
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
-            video_path = tmp.name
-            video_file.save(video_path)
-
-        hr_result = run_hr_video_analysis(video_path)
-        os.remove(video_path)
-
-        hr_score = hr_result["final_hr_score"]
+        if session["question_type"].lower() == "hr" and "video" in request.files:
+            video_file = request.files["video"]
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+                video_path = tmp.name
+                video_file.save(video_path)
+    
+            hr_result = run_hr_video_analysis(video_path)
+            os.remove(video_path)
+            hr_score = hr_result["final_hr_score"]
 
     # -----------------------------
     # COMBINE SCORES
     # -----------------------------
     if session["question_type"].lower() == "hr":
-        final_score = round((text_score_percent * 0.6) + (hr_score * 0.4), 2)
+        final_score = round(float((text_score_percent * 0.6) + (hr_score * 0.4)), 2)
     else:
         final_score = text_score_percent
 
@@ -381,8 +475,8 @@ def evaluate():
     """, (
         answer_id,
         final_score,  # already percentage
-        round(text_result["semantic_similarity"] * 100, 2),
-        round(text_result["keyword_score"] * 100, 2),
+        round(float(text_result["semantic_similarity"]) * 100, 2),
+        round(float(text_result["keyword_score"]) * 100, 2),
         text_result["feedback"]
     ))
     mysql.connection.commit()
@@ -553,7 +647,76 @@ def analyze_resume():
 # =========================================================
 @app.route("/progress")
 def progress():
-    return render_template("progress.html")
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    cursor = mysql.connection.cursor()
+
+    # 1. RADAR CHART (Average score by category)
+    cursor.execute("""
+        SELECT sq.question_type, AVG(er.final_score)
+        FROM interview_sessions s
+        JOIN session_questions sq ON s.session_id = sq.session_id
+        JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
+        JOIN evaluation_results er ON ua.answer_id = er.answer_id
+        WHERE s.user_id = %s
+        GROUP BY sq.question_type
+    """, (user_id,))
+    radar_data = cursor.fetchall()
+    
+    radar_dict = {"HR": 0, "Aptitude": 0, "Technical": 0}
+    for row in radar_data:
+        radar_dict[row[0].capitalize()] = round(row[1], 1) if row[1] else 0
+
+    # 2. TREND CHART (Average score per day)
+    cursor.execute("""
+        SELECT DATE(s.start_time) as session_date, AVG(er.final_score)
+        FROM interview_sessions s
+        JOIN session_questions sq ON s.session_id = sq.session_id
+        JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
+        JOIN evaluation_results er ON ua.answer_id = er.answer_id
+        WHERE s.user_id = %s
+        GROUP BY session_date
+        ORDER BY session_date ASC
+    """, (user_id,))
+    trend_data = cursor.fetchall()
+    
+    trend_dates = [row[0].strftime("%b %d") if hasattr(row[0], "strftime") else str(row[0]) for row in trend_data]
+    trend_scores = [round(row[1], 1) for row in trend_data]
+
+    # 3. DETAILED HISTORY TABLE
+    cursor.execute("""
+        SELECT s.start_time, jr.role_name, sq.question_type, er.final_score, er.feedback
+        FROM interview_sessions s
+        JOIN job_roles jr ON s.role_id = jr.role_id
+        JOIN session_questions sq ON s.session_id = sq.session_id
+        JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
+        JOIN evaluation_results er ON ua.answer_id = er.answer_id
+        WHERE s.user_id = %s
+        ORDER BY s.start_time DESC
+    """, (user_id,))
+    history_rows = cursor.fetchall()
+    
+    history = [
+        {
+            "date": row[0].strftime("%b %d, %Y %I:%M %p") if hasattr(row[0], "strftime") else str(row[0]),
+            "role": row[1],
+            "type": row[2].capitalize(),
+            "score": round(row[3], 1),
+            "feedback": row[4]
+        }
+        for row in history_rows
+    ]
+    cursor.close()
+
+    return render_template(
+        "progress.html",
+        radar_data=radar_dict,
+        trend_dates=trend_dates,
+        trend_scores=trend_scores,
+        history=history
+    )
 
 @app.route("/interview")
 def interview():
