@@ -1,8 +1,6 @@
-CREATE DATABASE interview_prep_db;
-USE interview_prep_db;
 
 CREATE TABLE users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id SERIAL PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -10,12 +8,12 @@ CREATE TABLE users (
 );
 
 CREATE TABLE job_roles (
-    role_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_id SERIAL PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE interview_sessions (
-    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     role_id INT NOT NULL,
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -25,17 +23,17 @@ CREATE TABLE interview_sessions (
 );
 
 CREATE TABLE session_questions (
-    session_question_id INT AUTO_INCREMENT PRIMARY KEY,
+    session_question_id SERIAL PRIMARY KEY,
     session_id INT NOT NULL,
     dataset_question_id INT NOT NULL,
-    question_type ENUM('HR','APTITUDE','TECHNICAL') NOT NULL,
-    difficulty ENUM('Easy','Medium','Hard') NOT NULL,
+    question_type VARCHAR(20) CHECK (question_type IN ('HR','APTITUDE','TECHNICAL')) NOT NULL,
+    difficulty VARCHAR(20) CHECK (difficulty IN ('Easy','Medium','Hard')) NOT NULL,
     question_order INT NOT NULL,
     FOREIGN KEY (session_id) REFERENCES interview_sessions(session_id)
 );
 
 CREATE TABLE user_answers (
-    answer_id INT AUTO_INCREMENT PRIMARY KEY,
+    answer_id SERIAL PRIMARY KEY,
     session_question_id INT NOT NULL,
     answer_text TEXT NOT NULL,
     answer_time_seconds INT,
@@ -43,7 +41,7 @@ CREATE TABLE user_answers (
 );
 
 CREATE TABLE evaluation_results (
-    evaluation_id INT AUTO_INCREMENT PRIMARY KEY,
+    evaluation_id SERIAL PRIMARY KEY,
     answer_id INT NOT NULL,
     final_score FLOAT,
     semantic_similarity FLOAT,
@@ -53,7 +51,7 @@ CREATE TABLE evaluation_results (
 );
 
 CREATE TABLE resume_analysis (
-    resume_id INT AUTO_INCREMENT PRIMARY KEY,
+    resume_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     ats_score FLOAT,
     matched_skills TEXT,

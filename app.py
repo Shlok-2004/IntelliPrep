@@ -1,10 +1,14 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from flask_cors import CORS
-from flask_mysqldb import MySQL
-import pandas as pd
+import psycopg2
+from psycopg2.extras import DictCursor
 import os
+import pandas as pd
 import re
 import tempfile
+from dotenv import load_dotenv
+
+load_dotenv()
 from intelliprep_resume_engine.core.resume_parser import extract_resume_text, clean_text
 from intelliprep_resume_engine.core.role_profiles import ROLE_SKILLS, ROLE_CRITICAL_SKILLS
 from intelliprep_resume_engine.core.skill_extractor import extract_skills
@@ -27,14 +31,30 @@ app.secret_key = "interview_secret"
 CORS(app)
 
 # =========================================================
-# MYSQL CONFIG
+# POSTGRES CONFIG
 # =========================================================
-app.config["MYSQL_HOST"] = "localhost"
-app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "shlok19"
-app.config["MYSQL_DB"] = "interview_prep_db"
+DB_URL = os.environ.get("DATABASE_URL")
 
-mysql = MySQL(app)
+def get_db_connection():
+    conn = psycopg2.connect(DB_URL, cursor_factory=DictCursor)
+    return conn
+
+class DummyMySQL:
+    @property
+    def connection(self):
+        if not hasattr(g, 'db_conn'):
+            g.db_conn = get_db_connection()
+        return g.db_conn
+
+from flask import g
+mysql = DummyMySQL()
+
+@app.teardown_appcontext
+def close_connection(exception):
+    conn = getattr(g, 'db_conn', None)
+    if conn is not None:
+        conn.close()
+
 
 # =========================================================
 # LOAD QUESTIONS DATASET
@@ -277,12 +297,11 @@ def start_interview():
     role_id = role_row[0] if role_row else None
 
     cur.execute(
-        "INSERT INTO interview_sessions (user_id, role_id) VALUES (%s,%s)",
+        "INSERT INTO interview_sessions (user_id, role_id) VALUES (%s,%s) RETURNING session_id",
         (session["user_id"], role_id)
     )
+    session["session_id"] = cur.fetchone()[0]
     mysql.connection.commit()
-
-    session["session_id"] = int(cur.lastrowid)
     cur.close()
     # Store first question in DB
     first_question_index = classified_indices[0]
@@ -291,17 +310,16 @@ def start_interview():
     cur.execute("""
         INSERT INTO session_questions
         (session_id, dataset_question_id, question_type, difficulty, question_order)
-        VALUES (%s,%s,%s,%s,%s)
+        VALUES (%s,%s,%s,%s,%s) RETURNING session_question_id
     """, (
         session["session_id"],
         first_question_index,
-        filtered_df.loc[first_question_index, "question_type"],
+        str(filtered_df.loc[first_question_index, "question_type"]).strip().upper(),
         filtered_df.loc[first_question_index, "difficulty"],
         1
     ))
+    session["session_question_id"] = cur.fetchone()[0]
     mysql.connection.commit()
-
-    session["session_question_id"] = cur.lastrowid
     cur.close()
 
 
@@ -363,17 +381,16 @@ def next_question():
     cur.execute("""
         INSERT INTO session_questions
         (session_id, dataset_question_id, question_type, difficulty, question_order)
-        VALUES (%s,%s,%s,%s,%s)
+        VALUES (%s,%s,%s,%s,%s) RETURNING session_question_id
     """, (
         session["session_id"],
         question_index,
-        filtered_df.loc[question_index, "question_type"],
+        str(filtered_df.loc[question_index, "question_type"]).strip().upper(),
         filtered_df.loc[question_index, "difficulty"],
         idx + 1
     ))
+    session["session_question_id"] = cur.fetchone()[0]
     mysql.connection.commit()
-
-    session["session_question_id"] = cur.lastrowid
     cur.close()
 
     response_data = {
@@ -459,14 +476,13 @@ def evaluate():
     cur.execute("""
         INSERT INTO user_answers
         (session_question_id, answer_text)
-        VALUES (%s,%s)
+        VALUES (%s,%s) RETURNING answer_id
     """, (
         session["session_question_id"],
         user_answer
     ))
+    answer_id = cur.fetchone()[0]
     mysql.connection.commit()
-
-    answer_id = cur.lastrowid
 
     cur.execute("""
         INSERT INTO evaluation_results
@@ -523,14 +539,13 @@ def analyze_hr_video():
 
         cur.execute("""
             INSERT INTO user_answers(session_question_id, answer_text)
-            VALUES(%s,%s)
+            VALUES(%s,%s) RETURNING answer_id
         """, (
             session.get("session_question_id", None),
             "HR Video Response"
         ))
+        answer_id = cur.fetchone()[0]
         mysql.connection.commit()
-
-        answer_id = cur.lastrowid
 
         cur.execute("""
             INSERT INTO evaluation_results
