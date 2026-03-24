@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirement.txt .
 RUN pip install --no-cache-dir -r requirement.txt
 
-# Download Spacy English model required by the app (assuming it needs en_core_web_sm)
-RUN python -m spacy download en_core_web_sm
+# Download Spacy English model
+RUN pip install --no-cache-dir https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 
 # Copy the rest of the application
 COPY . .
