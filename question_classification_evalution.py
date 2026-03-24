@@ -24,6 +24,12 @@ def get_bert_model():
         _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
     return _bert_model
 
+def cleanup_bert_model():
+    global _bert_model
+    _bert_model = None
+    import gc
+    gc.collect()
+
 
 # ======================================================
 # DIFFICULTY INFERENCE

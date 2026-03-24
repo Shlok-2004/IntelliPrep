@@ -463,18 +463,26 @@ def evaluate():
             "feedback": "Correct Answer! Great job." if correct else f"Incorrect. The correct answer was Option {str(ideal_answer).upper()}."
         }
     else:
-        text_result = evaluate_answer(user_answer, ideal_answer)
-        text_score_percent = round(text_result["final_score"] * 100, 2)
-
         if session["question_type"].lower() == "hr" and "video" in request.files:
             video_file = request.files["video"]
             with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
                 video_path = tmp.name
                 video_file.save(video_path)
     
+            from hr_analysis import run_hr_video_analysis, cleanup_hr_models
             hr_result = run_hr_video_analysis(video_path)
             os.remove(video_path)
             hr_score = hr_result["final_hr_score"]
+            
+            # WIPE MediaPipe/TFLite models from Render Memory limits
+            cleanup_hr_models()
+
+        text_result = evaluate_answer(user_answer, ideal_answer)
+        text_score_percent = round(text_result["final_score"] * 100, 2)
+        
+        # WIPE PyTorch models from Render Memory limits
+        from question_classification_evalution import cleanup_bert_model
+        cleanup_bert_model()
 
     # -----------------------------
     # COMBINE SCORES

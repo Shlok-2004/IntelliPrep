@@ -31,17 +31,30 @@ def _get_emotion_interpreter():
 def _get_face_landmarker():
     global _face_landmarker
     if _face_landmarker is None:
-        from mediapipe.tasks import python as mp_python
+        import mediapipe as mp
+        from mediapipe.tasks import python
         from mediapipe.tasks.python import vision
-        base_options = mp_python.BaseOptions(model_asset_path=FACE_MODEL)
+
         options = vision.FaceLandmarkerOptions(
-            base_options=base_options,
-            output_face_blendshapes=False,
-            output_facial_transformation_matrixes=False,
+            base_options=python.BaseOptions(model_asset_path=FACE_MODEL),
+            output_face_blendshapes=True,
+            output_facial_transformation_matrixes=True,
             num_faces=1
         )
         _face_landmarker = vision.FaceLandmarker.create_from_options(options)
     return _face_landmarker
+
+def cleanup_hr_models():
+    global _emotion_interpreter, _face_landmarker
+    if _face_landmarker is not None:
+        try:
+            _face_landmarker.close()
+        except Exception:
+            pass
+    _emotion_interpreter = None
+    _face_landmarker = None
+    import gc
+    gc.collect()
 
 
 # =========================================================
