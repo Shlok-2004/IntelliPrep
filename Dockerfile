@@ -20,8 +20,11 @@ RUN pip install --no-cache-dir https://github.com/explosion/spacy-models/release
 # Copy the rest of the application
 COPY . .
 
-# Expose port
+# Pre-download SentenceTransformer model to prevent runtime downloads and timeouts
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
+# Expose port (Render ignores EXPOSE but good for local dev)
 EXPOSE 8000
 
 # Command to run the application using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--timeout", "120", "app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8000} --timeout 120 app:app"]

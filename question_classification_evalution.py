@@ -12,9 +12,15 @@ from sentence_transformers import SentenceTransformer
 
 
 # ======================================================
-# LOAD BERT MODEL (Loads Once)
+# LAZY LOAD BERT MODEL (To save memory on startup)
 # ======================================================
-bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+_bert_model = None
+
+def get_bert_model():
+    global _bert_model
+    if _bert_model is None:
+        _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+    return _bert_model
 
 
 # ======================================================
@@ -158,7 +164,7 @@ def evaluate_answer(user_answer, ideal_answer):
     # -----------------------------
     # BERT Semantic Similarity
     # -----------------------------
-    embeddings = bert_model.encode(
+    embeddings = get_bert_model().encode(
         [ideal_answer, user_answer],
         convert_to_numpy=True
     )
