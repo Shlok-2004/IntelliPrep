@@ -13,21 +13,32 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "emotion_recognition_model.h5")
 FACE_MODEL = os.path.join(BASE_DIR, "face_landmarker.task")
 
-emotion_model = load_model(MODEL_PATH, compile=False)
 EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
+# Lazy-loaded globals
+_emotion_model = None
+_face_landmarker = None
 
-base_options = python.BaseOptions(model_asset_path=FACE_MODEL)
-options = vision.FaceLandmarkerOptions(
-    base_options=base_options,
-    output_face_blendshapes=False,
-    output_facial_transformation_matrixes=False,
-    num_faces=1
-)
+def _get_emotion_model():
+    global _emotion_model
+    if _emotion_model is None:
+        _emotion_model = load_model(MODEL_PATH, compile=False)
+    return _emotion_model
 
-face_landmarker = vision.FaceLandmarker.create_from_options(options)
+def _get_face_landmarker():
+    global _face_landmarker
+    if _face_landmarker is None:
+        from mediapipe.tasks import python as mp_python
+        from mediapipe.tasks.python import vision
+        base_options = mp_python.BaseOptions(model_asset_path=FACE_MODEL)
+        options = vision.FaceLandmarkerOptions(
+            base_options=base_options,
+            output_face_blendshapes=False,
+            output_facial_transformation_matrixes=False,
+            num_faces=1
+        )
+        _face_landmarker = vision.FaceLandmarker.create_from_options(options)
+    return _face_landmarker
 
 
 # =========================================================
@@ -76,7 +87,7 @@ def run_hr_video_analysis(video_path):
             data=rgb
         )
 
-        result = face_landmarker.detect(mp_image)
+        result = _get_face_landmarker().detect(mp_image)
 
         if result.face_landmarks:
             landmarks = result.face_landmarks[0]
@@ -95,7 +106,7 @@ def run_hr_video_analysis(video_path):
                 face = face.astype("float32") / 255.0
                 face = face.reshape(1, 48, 48, 1)
 
-                preds = emotion_model.predict(face, verbose=0)
+                preds = _get_emotion_model().predict(face, verbose=0)
                 emotion = EMOTIONS[np.argmax(preds)]
                 emotion_count[emotion] += 1
 

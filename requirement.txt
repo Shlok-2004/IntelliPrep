@@ -18,13 +18,11 @@ numpy==1.26.4
 # ==============================
 scikit-learn==1.4.2
 sentence-transformers==2.7.0
-torch==2.2.2
 
 # ==============================
 # Deep Learning (HR Model)
 # ==============================
-tensorflow==2.15.0
-keras==2.15.0
+tensorflow-cpu==2.15.0
 
 # ==============================
 # NLP
