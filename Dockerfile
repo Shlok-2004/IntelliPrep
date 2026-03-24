@@ -24,7 +24,7 @@ COPY questions.csv .
 COPY . .
 
 # Pre-download SentenceTransformer model to prevent runtime downloads and timeouts
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+RUN python -c "import os; os.environ['USE_TF']='0'; from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 # Expose port (Render ignores EXPOSE but good for local dev)
 EXPOSE 8000

@@ -15,6 +15,11 @@ _bert_model = None
 def get_bert_model():
     global _bert_model
     if _bert_model is None:
+        import os
+        # FORCE HuggingFace to completely ignore TensorFlow
+        os.environ["USE_TF"] = "0"
+        os.environ["OMP_NUM_THREADS"] = "1"
+        
         from sentence_transformers import SentenceTransformer
         _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
     return _bert_model
