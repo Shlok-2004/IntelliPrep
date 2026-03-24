@@ -63,7 +63,7 @@ def run_hr_video_analysis(video_path):
 
     frame_count = 0
     processed_frames = 0
-    MAX_PROCESSED_FRAMES = 120  # limit to 120 sampled frames
+    MAX_PROCESSED_FRAMES = 15  # STRICT LIMIT to prevent Render 120s Worker Timeout
 
     while True:
         ret, frame = cap.read()
@@ -72,8 +72,8 @@ def run_hr_video_analysis(video_path):
 
         frame_count += 1
 
-        # Process only 1 frame per second
-        if frame_count % fps != 0:
+        # Render Free Tier optimization: Process only 1 frame every 2 seconds
+        if frame_count % (fps * 2) != 0:
             continue
 
         processed_frames += 1
