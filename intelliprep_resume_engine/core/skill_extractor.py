@@ -1,16 +1,15 @@
-import spacy
-from spacy.matcher import PhraseMatcher
-
 _nlp = None
 
 def get_nlp():
     global _nlp
     if _nlp is None:
+        import spacy
         _nlp = spacy.load("en_core_web_sm")
     return _nlp
 
 
 def build_matcher(skill_list, nlp_inst):
+    from spacy.matcher import PhraseMatcher
     matcher = PhraseMatcher(nlp_inst.vocab, attr="LOWER")
     patterns = [nlp_inst.make_doc(skill) for skill in skill_list]
     matcher.add("SKILLS", patterns)

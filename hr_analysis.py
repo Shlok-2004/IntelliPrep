@@ -2,8 +2,6 @@ import os
 import cv2
 import time
 import numpy as np
-import mediapipe as mp
-from tensorflow.keras.models import load_model
 
 
 # =========================================================
@@ -22,6 +20,7 @@ _face_landmarker = None
 def _get_emotion_model():
     global _emotion_model
     if _emotion_model is None:
+        from tensorflow.keras.models import load_model
         _emotion_model = load_model(MODEL_PATH, compile=False)
     return _emotion_model
 
@@ -45,6 +44,7 @@ def _get_face_landmarker():
 # MAIN HR ANALYSIS FUNCTION
 # =========================================================
 def run_hr_video_analysis(video_path):
+    import mediapipe as mp
 
     cap = cv2.VideoCapture(video_path)
 

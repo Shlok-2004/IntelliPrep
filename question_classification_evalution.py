@@ -8,7 +8,6 @@ import re
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
 
 
 # ======================================================
@@ -19,6 +18,7 @@ _bert_model = None
 def get_bert_model():
     global _bert_model
     if _bert_model is None:
+        from sentence_transformers import SentenceTransformer
         _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
     return _bert_model
 
