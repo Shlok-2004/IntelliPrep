@@ -22,7 +22,7 @@ sentence-transformers==2.7.0
 # ==============================
 # Deep Learning (HR Model)
 # ==============================
-tensorflow-cpu==2.15.0
+tflite-runtime
 
 # ==============================
 # NLP

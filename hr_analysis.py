@@ -7,21 +7,26 @@ import numpy as np
 # LOAD MODELS ONCE (IMPORTANT FOR PERFORMANCE)
 # =========================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "emotion_recognition_model.h5")
+TFLITE_MODEL_PATH = os.path.join(BASE_DIR, "emotion_recognition_model.tflite")
 FACE_MODEL = os.path.join(BASE_DIR, "face_landmarker.task")
 
 EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
 # Lazy-loaded globals
-_emotion_model = None
+_emotion_interpreter = None
 _face_landmarker = None
 
-def _get_emotion_model():
-    global _emotion_model
-    if _emotion_model is None:
-        from tensorflow.keras.models import load_model
-        _emotion_model = load_model(MODEL_PATH, compile=False)
-    return _emotion_model
+def _get_emotion_interpreter():
+    global _emotion_interpreter
+    if _emotion_interpreter is None:
+        try:
+            import tflite_runtime.interpreter as tflite
+        except ImportError:
+            import tensorflow.lite as tflite
+        
+        _emotion_interpreter = tflite.Interpreter(model_path=TFLITE_MODEL_PATH)
+        _emotion_interpreter.allocate_tensors()
+    return _emotion_interpreter
 
 def _get_face_landmarker():
     global _face_landmarker
@@ -106,7 +111,14 @@ def run_hr_video_analysis(video_path):
                 face = face.astype("float32") / 255.0
                 face = face.reshape(1, 48, 48, 1)
 
-                preds = _get_emotion_model().predict(face, verbose=0)
+                interpreter = _get_emotion_interpreter()
+                input_idx = interpreter.get_input_details()[0]['index']
+                output_idx = interpreter.get_output_details()[0]['index']
+                
+                interpreter.set_tensor(input_idx, face)
+                interpreter.invoke()
+                preds = interpreter.get_tensor(output_idx)
+                
                 emotion = EMOTIONS[np.argmax(preds)]
                 emotion_count[emotion] += 1
 
