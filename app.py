@@ -226,7 +226,7 @@ def dashboard():
 
     # RECENT ACTIVITY
     cursor.execute("""
-        SELECT sq.question_type, s.start_time, er.final_score
+        SELECT sq.question_type, (s.start_time + INTERVAL '5 hours 30 minutes'), er.final_score
         FROM interview_sessions s
         JOIN session_questions sq ON s.session_id = sq.session_id
         JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
@@ -270,6 +270,7 @@ def start_interview():
     data = request.json
     job_role = data["job_role"].strip()
     question_type = data["question_type"].strip()
+    num_questions = int(data.get("num_questions", 5))
     session["job_role"] = job_role
     session["question_type"] = question_type
 
@@ -286,6 +287,7 @@ def start_interview():
     filtered_df["difficulty"] = filtered_df["question"].apply(infer_difficulty)
     # ML Classification
     classified_indices = classify_questions(filtered_df)
+    classified_indices = classified_indices[:num_questions]
 
     # Create Interview Session in DB
     cur = mysql.connection.cursor()
@@ -682,11 +684,18 @@ def progress():
     
     radar_dict = {"HR": 0, "Aptitude": 0, "Technical": 0}
     for row in radar_data:
-        radar_dict[row[0].capitalize()] = round(row[1], 1) if row[1] else 0
+        val = round(float(row[1]), 1) if row[1] else 0
+        q_type = str(row[0]).strip().upper()
+        if q_type == "HR":
+            radar_dict["HR"] = val
+        elif q_type == "TECHNICAL":
+            radar_dict["Technical"] = val
+        elif q_type == "APTITUDE":
+            radar_dict["Aptitude"] = val
 
     # 2. TREND CHART (Average score per day)
     cursor.execute("""
-        SELECT DATE(s.start_time) as session_date, AVG(er.final_score)
+        SELECT DATE(s.start_time + INTERVAL '5 hours 30 minutes') as session_date, AVG(er.final_score)
         FROM interview_sessions s
         JOIN session_questions sq ON s.session_id = sq.session_id
         JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
@@ -702,7 +711,7 @@ def progress():
 
     # 3. DETAILED HISTORY TABLE
     cursor.execute("""
-        SELECT s.start_time, jr.role_name, sq.question_type, er.final_score, er.feedback
+        SELECT (s.start_time + INTERVAL '5 hours 30 minutes'), jr.role_name, sq.question_type, er.final_score, er.feedback
         FROM interview_sessions s
         JOIN job_roles jr ON s.role_id = jr.role_id
         JOIN session_questions sq ON s.session_id = sq.session_id
@@ -717,7 +726,7 @@ def progress():
         {
             "date": row[0].strftime("%b %d, %Y %I:%M %p") if hasattr(row[0], "strftime") else str(row[0]),
             "role": row[1],
-            "type": row[2].capitalize(),
+            "type": "HR" if row[2].upper() == "HR" else row[2].capitalize(),
             "score": round(row[3], 1),
             "feedback": row[4]
         }
