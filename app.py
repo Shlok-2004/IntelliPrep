@@ -66,6 +66,7 @@ def get_df():
     if _df is None:
         import pandas as pd
         import os
+        print("DIAGNOSTIC LOG: Contents of /app: ", os.listdir(os.path.dirname(os.path.abspath(__file__))), flush=True)
         csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "questions.csv")
         _df = pd.read_csv(csv_path, encoding="latin1")
     return _df
