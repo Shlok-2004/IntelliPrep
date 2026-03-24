@@ -65,7 +65,9 @@ def get_df():
     global _df
     if _df is None:
         import pandas as pd
-        _df = pd.read_csv("questions.csv", encoding="latin1")
+        import os
+        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "questions.csv")
+        _df = pd.read_csv(csv_path, encoding="latin1")
     return _df
 
 from question_classification_evalution import infer_difficulty
