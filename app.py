@@ -57,9 +57,17 @@ def close_connection(exception):
 
 
 # =========================================================
-# LOAD QUESTIONS DATASET
+# LOAD QUESTIONS DATASET (LAZY)
 # =========================================================
-df = pd.read_csv("questions.csv", encoding="latin1")
+_df = None
+
+def get_df():
+    global _df
+    if _df is None:
+        import pandas as pd
+        _df = pd.read_csv("questions.csv", encoding="latin1")
+    return _df
+
 from question_classification_evalution import infer_difficulty
 
 # =========================================================
@@ -276,9 +284,10 @@ def start_interview():
 
 
     # Filter dataset
-    filtered_df = df[
-        (df["job_role"].str.strip().str.lower() == job_role.lower()) &
-        (df["question_type"].str.strip().str.lower() == question_type.lower())
+    df_instance = get_df()
+    filtered_df = df_instance[
+        (df_instance["job_role"].str.strip().str.lower() == job_role.lower()) &
+        (df_instance["question_type"].str.strip().str.lower() == question_type.lower())
     ].reset_index(drop=True)
 
     if filtered_df.empty:
@@ -364,9 +373,10 @@ def next_question():
     idx = session["current_index"]
 
     questions = session["questions"]
-    filtered_df = df[
-    (df["job_role"].str.strip().str.lower() == session["job_role"].lower()) &
-    (df["question_type"].str.strip().str.lower() == session["question_type"].lower())
+    df_instance = get_df()
+    filtered_df = df_instance[
+    (df_instance["job_role"].str.strip().str.lower() == session["job_role"].lower()) &
+    (df_instance["question_type"].str.strip().str.lower() == session["question_type"].lower())
     ].reset_index(drop=True)
 
     filtered_df["difficulty"] = filtered_df["question"].apply(infer_difficulty)
@@ -424,9 +434,10 @@ def evaluate():
 
     user_answer = request.form.get("answer", "")
 
-    filtered_df = df[
-        (df["job_role"].str.strip().str.lower() == session["job_role"].lower()) &
-        (df["question_type"].str.strip().str.lower() == session["question_type"].lower())
+    df_instance = get_df()
+    filtered_df = df_instance[
+        (df_instance["job_role"].str.strip().str.lower() == session["job_role"].lower()) &
+        (df_instance["question_type"].str.strip().str.lower() == session["question_type"].lower())
     ].reset_index(drop=True)
 
     question_idx = session["questions"][session["current_index"]]

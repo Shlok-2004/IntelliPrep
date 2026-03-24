@@ -1,5 +1,3 @@
-import pdfplumber
-import docx
 import re
 
 def clean_text(text):
@@ -9,6 +7,7 @@ def clean_text(text):
     return text.strip()
 
 def extract_text_from_pdf(file_path):
+    import pdfplumber
     text = ""
     with pdfplumber.open(file_path) as pdf:
         for page in pdf.pages:
@@ -18,6 +17,7 @@ def extract_text_from_pdf(file_path):
 
 
 def extract_text_from_docx(file_path):
+    import docx
     doc = docx.Document(file_path)
     full_text = []
     for para in doc.paragraphs:

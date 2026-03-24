@@ -5,9 +5,6 @@
 
 import random
 import re
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
-from sklearn.metrics.pairwise import cosine_similarity
 
 
 # ======================================================
@@ -49,6 +46,9 @@ def classify_questions(filtered_df, max_questions=5):
 
     filtered_df = filtered_df.copy()
     filtered_df["difficulty"] = filtered_df["question"].apply(infer_difficulty)
+
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
 
     vectorizer = TfidfVectorizer(stop_words="english")
     tfidf_matrix = vectorizer.fit_transform(filtered_df["question"])
@@ -97,6 +97,7 @@ def classify_questions(filtered_df, max_questions=5):
 # KEY TERM EXTRACTION
 # ======================================================
 def extract_key_terms(text, top_n=6):
+    from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
     words = re.findall(r'\b[a-zA-Z]{4,}\b', text.lower())
     keywords = [w for w in words if w not in ENGLISH_STOP_WORDS]
     return list(dict.fromkeys(keywords))[:top_n]
@@ -164,6 +165,8 @@ def evaluate_answer(user_answer, ideal_answer):
     # -----------------------------
     # BERT Semantic Similarity
     # -----------------------------
+    from sklearn.metrics.pairwise import cosine_similarity
+
     embeddings = get_bert_model().encode(
         [ideal_answer, user_answer],
         convert_to_numpy=True

@@ -1,7 +1,3 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
-
 def skill_match_score(found_skills, role_skills):
     found = set([s.lower() for s in found_skills])
     required = set([s.lower() for s in role_skills])
@@ -15,6 +11,9 @@ def skill_match_score(found_skills, role_skills):
 
 
 def semantic_similarity(resume_text, jd_text):
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+
     documents = [resume_text, jd_text]
     vectorizer = TfidfVectorizer(stop_words="english")
     tfidf_matrix = vectorizer.fit_transform(documents)
