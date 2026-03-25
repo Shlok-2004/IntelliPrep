@@ -2,6 +2,12 @@ import os
 import time
 import numpy as np
 
+# Suppress MediaPipe/TF C++ logs
+os.environ['GLOG_minloglevel'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import logging
+logging.getLogger('absl').setLevel('ERROR')
+
 
 # =========================================================
 # LOAD MODELS ONCE (IMPORTANT FOR PERFORMANCE)
