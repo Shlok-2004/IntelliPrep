@@ -513,12 +513,18 @@ def evaluate():
     """, (
         answer_id,
         final_score,  # already percentage
-        round(float(text_result["semantic_similarity"]) * 100, 2),
-        round(float(text_result["keyword_score"]) * 100, 2),
+        round(float(text_result["semantic_similarity"]) * 100, 2) if "semantic_similarity" in text_result else 100,
+        round(float(text_result["keyword_score"]) * 100, 2) if "keyword_score" in text_result else 100,
         text_result["feedback"]
     ))
     mysql.connection.commit()
     cur.close()
+
+    # FREQUENT GARBAGE COLLECTION FOR RENDER 512MB RAM QUOTA
+    from hr_analysis import cleanup_hr_models
+    from question_classification_evalution import cleanup_bert_model
+    cleanup_hr_models()
+    cleanup_bert_model()
 
     return jsonify({
         "final_score": final_score,
@@ -584,6 +590,10 @@ def analyze_hr_video():
         ))
         mysql.connection.commit()
         cur.close()
+
+        # MANUALLY RELEASE RAM TO PREVENT RENDER OOM
+        from hr_analysis import cleanup_hr_models
+        cleanup_hr_models()
 
         return jsonify(result)
 
