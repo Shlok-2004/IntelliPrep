@@ -463,12 +463,7 @@ def evaluate():
             "feedback": "Correct Answer! Great job." if correct else f"Incorrect. The correct answer was Option {str(ideal_answer).upper()}."
         }
     else:
-        import multiprocessing as mp
-        from concurrent.futures import ProcessPoolExecutor
-        
-        ctx = mp.get_context('spawn')
-        
-        # 1. PROCESS VIDEO IN ISOLATED SUBPROCESS
+        # 1. PROCESS VIDEO DIRECTLY
         if session["question_type"].lower() == "hr" and "video" in request.files:
             video_file = request.files["video"]
             with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
@@ -476,18 +471,14 @@ def evaluate():
                 video_file.save(video_path)
     
             from hr_analysis import run_hr_video_analysis
-            with ProcessPoolExecutor(max_workers=1, mp_context=ctx) as executor:
-                future = executor.submit(run_hr_video_analysis, video_path)
-                hr_result = future.result()
+            hr_result = run_hr_video_analysis(video_path)
                 
             os.remove(video_path)
             hr_score = hr_result["final_hr_score"]
 
-        # 2. PROCESS TEXT IN ISOLATED SUBPROCESS
+        # 2. PROCESS TEXT DIRECTLY
         from question_classification_evalution import evaluate_answer
-        with ProcessPoolExecutor(max_workers=1, mp_context=ctx) as executor:
-            future = executor.submit(evaluate_answer, user_answer, ideal_answer)
-            text_result = future.result()
+        text_result = evaluate_answer(str(user_answer), str(ideal_answer))
             
         text_score_percent = round(text_result["final_score"] * 100, 2)
 
@@ -562,15 +553,8 @@ def analyze_hr_video():
         video_file.save(video_path)
 
     try:
-        import multiprocessing as mp
-        from concurrent.futures import ProcessPoolExecutor
-        
-        ctx = mp.get_context('spawn')
         from hr_analysis import run_hr_video_analysis
-        
-        with ProcessPoolExecutor(max_workers=1, mp_context=ctx) as executor:
-            future = executor.submit(run_hr_video_analysis, video_path)
-            result = future.result()
+        result = run_hr_video_analysis(video_path)
 
         os.remove(video_path)
 
