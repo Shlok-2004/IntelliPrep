@@ -22,6 +22,39 @@ from intelliprep_resume_engine.core.feedback import generate_feedback
 from question_classification_evalution import classify_questions, evaluate_answer
 from hr_analysis import run_hr_video_analysis
 
+import platform
+import multiprocessing as mp
+
+def _child_runner(_module_name, _func_name, _args):
+    import importlib
+    mod = importlib.import_module(_module_name)
+    func = getattr(mod, _func_name)
+    return func(*_args)
+
+def run_isolated_eval(module_name, func_name, *args):
+    """
+    Executes heavy ML logic in isolated OS scopes.
+    Windows -> uses fresh subprocess (avoids thread deadlocks).
+    Linux -> uses 'fork' process pool (re-uses memory via Copy-On-Write, avoids Render OOM kills).
+    """
+    if platform.system() == "Windows":
+        import subprocess, json, tempfile, uuid, os
+        out_json = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.json")
+        encoded_args = json.dumps(args)
+        script = f"import sys, json; import importlib; mod = importlib.import_module('{module_name}'); func = getattr(mod, '{func_name}'); res = func(*json.loads(sys.argv[1])); json.dump(res, open(sys.argv[2], 'w'))"
+        subprocess.run(["python", "-c", script, encoded_args, out_json], check=True)
+        with open(out_json, 'r') as f:
+            res = json.load(f)
+        if os.path.exists(out_json):
+            os.remove(out_json)
+        return res
+    else:
+        ctx = mp.get_context('fork')
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(max_workers=1, mp_context=ctx) as executor:
+            future = executor.submit(_child_runner, module_name, func_name, args)
+            return future.result()
+
 
 # =========================================================
 # APP SETUP
@@ -463,43 +496,20 @@ def evaluate():
             "feedback": "Correct Answer! Great job." if correct else f"Incorrect. The correct answer was Option {str(ideal_answer).upper()}."
         }
     else:
-        # 1. PROCESS VIDEO IN SUBPROCESS
+        # 1. PROCESS VIDEO IN OS-SHARED SUBPROCESS
         if session["question_type"].lower() == "hr" and "video" in request.files:
             video_file = request.files["video"]
             with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
                 video_path = tmp.name
                 video_file.save(video_path)
     
-            import subprocess
-            import json
-            import uuid
-            out_json = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.json")
-            
-            script = "import sys, json; from hr_analysis import run_hr_video_analysis; res = run_hr_video_analysis(sys.argv[1]); json.dump(res, open(sys.argv[2], 'w'))"
-            subprocess.run(["python", "-c", script, video_path, out_json], check=True)
-            
-            with open(out_json, 'r') as f:
-                hr_result = json.load(f)
+            hr_result = run_isolated_eval("hr_analysis", "run_hr_video_analysis", video_path)
                 
             os.remove(video_path)
-            if os.path.exists(out_json):
-                os.remove(out_json)
             hr_score = hr_result["final_hr_score"]
 
-        # 2. PROCESS TEXT IN SUBPROCESS
-        import subprocess
-        import json
-        import uuid
-        out_json_text = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.json")
-        
-        script_text = "import sys, json; from question_classification_evalution import evaluate_answer; res = evaluate_answer(sys.argv[1], sys.argv[2]); json.dump(res, open(sys.argv[3], 'w'))"
-        subprocess.run(["python", "-c", script_text, str(user_answer), str(ideal_answer), out_json_text], check=True)
-        
-        with open(out_json_text, 'r') as f:
-            text_result = json.load(f)
-            
-        if os.path.exists(out_json_text):
-            os.remove(out_json_text)
+        # 2. PROCESS TEXT IN OS-SHARED SUBPROCESS
+        text_result = run_isolated_eval("question_classification_evalution", "evaluate_answer", str(user_answer), str(ideal_answer))
             
         text_score_percent = round(text_result["final_score"] * 100, 2)
 
@@ -575,19 +585,8 @@ def analyze_hr_video():
         video_file.save(video_path)
 
     try:
-        import subprocess
-        import json
-        import uuid
-        out_json = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.json")
-        script = "import sys, json; from hr_analysis import run_hr_video_analysis; res = run_hr_video_analysis(sys.argv[1]); json.dump(res, open(sys.argv[2], 'w'))"
-        subprocess.run(["python", "-c", script, video_path, out_json], check=True)
-        
-        with open(out_json, 'r') as f:
-            result = json.load(f)
-            
+        result = run_isolated_eval("hr_analysis", "run_hr_video_analysis", video_path)
         os.remove(video_path)
-        if os.path.exists(out_json):
-            os.remove(out_json)
 
         cur = mysql.connection.cursor()
 
