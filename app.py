@@ -463,22 +463,43 @@ def evaluate():
             "feedback": "Correct Answer! Great job." if correct else f"Incorrect. The correct answer was Option {str(ideal_answer).upper()}."
         }
     else:
-        # 1. PROCESS VIDEO DIRECTLY
+        # 1. PROCESS VIDEO IN SUBPROCESS
         if session["question_type"].lower() == "hr" and "video" in request.files:
             video_file = request.files["video"]
             with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
                 video_path = tmp.name
                 video_file.save(video_path)
     
-            from hr_analysis import run_hr_video_analysis
-            hr_result = run_hr_video_analysis(video_path)
+            import subprocess
+            import json
+            import uuid
+            out_json = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.json")
+            
+            script = "import sys, json; from hr_analysis import run_hr_video_analysis; res = run_hr_video_analysis(sys.argv[1]); json.dump(res, open(sys.argv[2], 'w'))"
+            subprocess.run(["python", "-c", script, video_path, out_json], check=True)
+            
+            with open(out_json, 'r') as f:
+                hr_result = json.load(f)
                 
             os.remove(video_path)
+            if os.path.exists(out_json):
+                os.remove(out_json)
             hr_score = hr_result["final_hr_score"]
 
-        # 2. PROCESS TEXT DIRECTLY
-        from question_classification_evalution import evaluate_answer
-        text_result = evaluate_answer(str(user_answer), str(ideal_answer))
+        # 2. PROCESS TEXT IN SUBPROCESS
+        import subprocess
+        import json
+        import uuid
+        out_json_text = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.json")
+        
+        script_text = "import sys, json; from question_classification_evalution import evaluate_answer; res = evaluate_answer(sys.argv[1], sys.argv[2]); json.dump(res, open(sys.argv[3], 'w'))"
+        subprocess.run(["python", "-c", script_text, str(user_answer), str(ideal_answer), out_json_text], check=True)
+        
+        with open(out_json_text, 'r') as f:
+            text_result = json.load(f)
+            
+        if os.path.exists(out_json_text):
+            os.remove(out_json_text)
             
         text_score_percent = round(text_result["final_score"] * 100, 2)
 
@@ -520,11 +541,6 @@ def evaluate():
     mysql.connection.commit()
     cur.close()
 
-    # FREQUENT GARBAGE COLLECTION FOR RENDER 512MB RAM QUOTA
-    from hr_analysis import cleanup_hr_models
-    from question_classification_evalution import cleanup_bert_model
-    cleanup_hr_models()
-    cleanup_bert_model()
 
     return jsonify({
         "final_score": final_score,
@@ -559,10 +575,19 @@ def analyze_hr_video():
         video_file.save(video_path)
 
     try:
-        from hr_analysis import run_hr_video_analysis
-        result = run_hr_video_analysis(video_path)
-
+        import subprocess
+        import json
+        import uuid
+        out_json = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.json")
+        script = "import sys, json; from hr_analysis import run_hr_video_analysis; res = run_hr_video_analysis(sys.argv[1]); json.dump(res, open(sys.argv[2], 'w'))"
+        subprocess.run(["python", "-c", script, video_path, out_json], check=True)
+        
+        with open(out_json, 'r') as f:
+            result = json.load(f)
+            
         os.remove(video_path)
+        if os.path.exists(out_json):
+            os.remove(out_json)
 
         cur = mysql.connection.cursor()
 
@@ -590,10 +615,6 @@ def analyze_hr_video():
         ))
         mysql.connection.commit()
         cur.close()
-
-        # MANUALLY RELEASE RAM TO PREVENT RENDER OOM
-        from hr_analysis import cleanup_hr_models
-        cleanup_hr_models()
 
         return jsonify(result)
 
