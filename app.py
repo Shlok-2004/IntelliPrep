@@ -3,6 +3,7 @@ from flask_cors import CORS
 import psycopg2
 from psycopg2.extras import DictCursor
 import os
+import requests
 import pandas as pd
 import re
 import tempfile
@@ -20,40 +21,31 @@ from intelliprep_resume_engine.core.scorer import (
 )
 from intelliprep_resume_engine.core.feedback import generate_feedback
 from question_classification_evalution import classify_questions, evaluate_answer
-from hr_analysis import run_hr_video_analysis
 
-import platform
-import multiprocessing as mp
+# =========================================================
+# HUGGING FACE SPACE — HR VIDEO ANALYSIS MICROSERVICE
+# =========================================================
+HF_HR_SPACE_URL = os.environ.get("HF_HR_SPACE_URL", "").rstrip("/")
 
-def _child_runner(_module_name, _func_name, _args):
-    import importlib
-    mod = importlib.import_module(_module_name)
-    func = getattr(mod, _func_name)
-    return func(*_args)
-
-def run_isolated_eval(module_name, func_name, *args):
+def call_hf_hr_space(video_path: str) -> dict:
     """
-    Executes heavy ML logic in isolated OS scopes.
-    Windows -> uses fresh subprocess (avoids thread deadlocks).
-    Linux -> uses 'fork' process pool (re-uses memory via Copy-On-Write, avoids Render OOM kills).
+    Sends a video file to the Hugging Face Space microservice
+    and returns the HR analysis result as a dict.
     """
-    if platform.system() == "Windows":
-        import subprocess, json, tempfile, uuid, os
-        out_json = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.json")
-        encoded_args = json.dumps(args)
-        script = f"import sys, json; import importlib; mod = importlib.import_module('{module_name}'); func = getattr(mod, '{func_name}'); res = func(*json.loads(sys.argv[1])); json.dump(res, open(sys.argv[2], 'w'))"
-        subprocess.run(["python", "-c", script, encoded_args, out_json], check=True)
-        with open(out_json, 'r') as f:
-            res = json.load(f)
-        if os.path.exists(out_json):
-            os.remove(out_json)
-        return res
-    else:
-        ctx = mp.get_context('fork')
-        from concurrent.futures import ProcessPoolExecutor
-        with ProcessPoolExecutor(max_workers=1, mp_context=ctx) as executor:
-            future = executor.submit(_child_runner, module_name, func_name, args)
-            return future.result()
+    if not HF_HR_SPACE_URL:
+        raise RuntimeError("HF_HR_SPACE_URL is not set in environment variables.")
+
+    with open(video_path, "rb") as f:
+        response = requests.post(
+            f"{HF_HR_SPACE_URL}/analyze",
+            files={"video": ("video.mp4", f, "video/mp4")},
+            timeout=120  # video processing can take time
+        )
+
+    if response.status_code != 200:
+        raise RuntimeError(f"HF Space error {response.status_code}: {response.text}")
+
+    return response.json()
 
 
 # =========================================================
@@ -66,17 +58,37 @@ CORS(app)
 # =========================================================
 # POSTGRES CONFIG
 # =========================================================
-DB_URL = os.environ.get("DATABASE_URL")
+import time
 
-def get_db_connection():
-    conn = psycopg2.connect(DB_URL, cursor_factory=DictCursor)
-    return conn
+def get_db_connection(retries=3, delay=1):
+    """Connect to NeonDB with retry logic for transient failures."""
+    db_url = os.environ.get("DATABASE_URL")
+    last_err = None
+    for attempt in range(retries):
+        try:
+            conn = psycopg2.connect(db_url, cursor_factory=DictCursor)
+            return conn
+        except psycopg2.OperationalError as e:
+            last_err = e
+            if attempt < retries - 1:
+                time.sleep(delay * (attempt + 1))  # 1s, 2s backoff
+    raise last_err
 
 class DummyMySQL:
     @property
     def connection(self):
-        if not hasattr(g, 'db_conn'):
+        if not hasattr(g, 'db_conn') or g.db_conn is None:
             g.db_conn = get_db_connection()
+        else:
+            # Check if existing connection is still alive
+            try:
+                g.db_conn.poll()
+            except Exception:
+                try:
+                    g.db_conn.close()
+                except Exception:
+                    pass
+                g.db_conn = get_db_connection()
         return g.db_conn
 
 from flask import g
@@ -86,7 +98,10 @@ mysql = DummyMySQL()
 def close_connection(exception):
     conn = getattr(g, 'db_conn', None)
     if conn is not None:
-        conn.close()
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 # =========================================================
@@ -503,13 +518,12 @@ def evaluate():
                 video_path = tmp.name
                 video_file.save(video_path)
     
-            hr_result = run_isolated_eval("hr_analysis", "run_hr_video_analysis", video_path)
+            hr_result = call_hf_hr_space(video_path)
                 
             os.remove(video_path)
             hr_score = hr_result["final_hr_score"]
 
-        # 2. PROCESS TEXT IN OS-SHARED SUBPROCESS
-        text_result = run_isolated_eval("question_classification_evalution", "evaluate_answer", str(user_answer), str(ideal_answer))
+        text_result = evaluate_answer(str(user_answer), str(ideal_answer))
             
         text_score_percent = round(text_result["final_score"] * 100, 2)
 
@@ -585,7 +599,7 @@ def analyze_hr_video():
         video_file.save(video_path)
 
     try:
-        result = run_isolated_eval("hr_analysis", "run_hr_video_analysis", video_path)
+        result = call_hf_hr_space(video_path)
         os.remove(video_path)
 
         cur = mysql.connection.cursor()

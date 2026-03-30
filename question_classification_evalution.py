@@ -1,34 +1,37 @@
 # ======================================================
 # QUESTION CLASSIFICATION + EVALUATION MODULE
 # Flask-Safe | Production-Ready
+# Uses Hugging Face Inference API (no local PyTorch)
 # ======================================================
 
 import random
 import re
+import os
+import requests
+import numpy as np
 
 
 # ======================================================
-# LAZY LOAD BERT MODEL (To save memory on startup)
+# HUGGING FACE INFERENCE API — TEXT EMBEDDINGS
+# Replaces local SentenceTransformer (saves ~600MB RAM)
 # ======================================================
-_bert_model = None
+HF_API_KEY = os.environ.get("HUGGINGFACE_API_KEY", "")
+HF_EMBED_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2/pipeline/feature-extraction"
 
-def get_bert_model():
-    global _bert_model
-    if _bert_model is None:
-        import os
-        # FORCE HuggingFace to completely ignore TensorFlow
-        os.environ["USE_TF"] = "0"
-        os.environ["OMP_NUM_THREADS"] = "1"
-        
-        from sentence_transformers import SentenceTransformer
-        _bert_model = SentenceTransformer('all-MiniLM-L6-v2')
-    return _bert_model
+def get_embeddings(texts: list) -> list:
+    """
+    Fetches sentence embeddings from the Hugging Face Inference API.
+    Returns a list of embedding vectors (one per input text).
+    """
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    payload = {"inputs": texts, "options": {"wait_for_model": True}}
 
-def cleanup_bert_model():
-    global _bert_model
-    _bert_model = None
-    import gc
-    gc.collect()
+    response = requests.post(HF_EMBED_URL, headers=headers, json=payload, timeout=30)
+
+    if response.status_code != 200:
+        raise RuntimeError(f"HF Inference API error {response.status_code}: {response.text}")
+
+    return response.json()  # List of embedding vectors
 
 
 # ======================================================
@@ -174,14 +177,11 @@ def evaluate_answer(user_answer, ideal_answer):
             }
 
     # -----------------------------
-    # BERT Semantic Similarity
+    # BERT Semantic Similarity (via HF Inference API)
     # -----------------------------
     from sklearn.metrics.pairwise import cosine_similarity
 
-    embeddings = get_bert_model().encode(
-        [ideal_answer, user_answer],
-        convert_to_numpy=True
-    )
+    embeddings = get_embeddings([ideal_answer, user_answer])
 
     semantic_similarity = cosine_similarity(
         [embeddings[0]],
