@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from intelliprep_resume_engine.core.resume_parser import extract_resume_text, clean_text
 from intelliprep_resume_engine.core.role_profiles import ROLE_SKILLS, ROLE_CRITICAL_SKILLS
-from intelliprep_resume_engine.core.skill_extractor import extract_skills
+from intelliprep_resume_engine.core.skill_extractor import extract_skills, extract_skills_from_jd
 from intelliprep_resume_engine.core.scorer import (
     skill_match_score,
     semantic_similarity,
@@ -139,20 +139,54 @@ def login():
 
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "SELECT user_id, full_name FROM users WHERE email=%s AND password=%s",
+            "SELECT user_id, full_name, is_admin, is_suspended FROM users WHERE email=%s AND password=%s",
             (email, password)
         )
         user = cursor.fetchone()
         cursor.close()
 
         if user:
+            if bool(user[3]):
+                return render_template("login.html", error="Your account has been suspended. Contact support.")
+                
             session["user_id"] = user[0]
             session["user_name"] = user[1]
+            session["is_admin"] = bool(user[2])
             return redirect(url_for("dashboard"))
         else:
             return "Invalid email or password"
 
     return render_template("login.html")
+
+@app.route("/admin-login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "SELECT user_id, full_name, is_admin, is_suspended FROM users WHERE email=%s AND password=%s",
+            (email, password)
+        )
+        user = cursor.fetchone()
+        cursor.close()
+
+        if user:
+            if bool(user[3]):
+                return render_template("admin_login.html", error="Your admin account has been suspended.")
+                
+            if bool(user[2]):
+                session["user_id"] = user[0]
+                session["user_name"] = user[1]
+                session["is_admin"] = True
+                return redirect(url_for("admin_dashboard"))
+            else:
+                return render_template("admin_login.html", error="Unauthorized. Administrative privileges required.")
+        else:
+            return render_template("admin_login.html", error="Invalid admin credentials.")
+
+    return render_template("admin_login.html")
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -207,6 +241,153 @@ def logout():
     return redirect(url_for("landing"))
 
 # =========================================================
+# ADMIN DASHBOARD
+# =========================================================
+from functools import wraps
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session or not session.get("is_admin"):
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route("/admin")
+@admin_required
+def admin_dashboard():
+    cursor = mysql.connection.cursor()
+    
+    # Global metrics
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0] or 0
+
+    cursor.execute("SELECT COUNT(*) FROM interview_sessions")
+    total_interviews = cursor.fetchone()[0] or 0
+    
+    cursor.execute("""
+        SELECT AVG(er.final_score)
+        FROM evaluation_results er
+    """)
+    global_avg_score = cursor.fetchone()[0]
+    global_avg_score = round(global_avg_score, 1) if global_avg_score else 0
+    
+    # User Details
+    cursor.execute("""
+        SELECT u.user_id, u.full_name, u.email,
+               COUNT(DISTINCT s.session_id) as total_interviews,
+               COALESCE(AVG(er.final_score), 0) as avg_score,
+               u.is_suspended
+        FROM users u
+        LEFT JOIN interview_sessions s ON u.user_id = s.user_id
+        LEFT JOIN session_questions sq ON s.session_id = sq.session_id
+        LEFT JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
+        LEFT JOIN evaluation_results er ON ua.answer_id = er.answer_id
+        GROUP BY u.user_id, u.full_name, u.email, u.is_suspended
+        ORDER BY total_interviews DESC
+    """)
+    users_data = cursor.fetchall()
+    
+    cursor.close()
+    
+    return render_template(
+        "admin_dashboard.html",
+        user_name=session.get("user_name"),
+        total_users=total_users,
+        total_interviews=total_interviews,
+        global_avg_score=global_avg_score,
+        users_data=users_data
+    )
+
+@app.route("/admin/user/<int:user_id>")
+@admin_required
+def admin_user_profile(user_id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT user_id, full_name, email, is_suspended, created_at FROM users WHERE user_id=%s", (user_id,))
+    target_user = cursor.fetchone()
+    
+    if not target_user:
+        cursor.close()
+        return "User not found", 404
+        
+    cursor.execute("SELECT COUNT(*) FROM interview_sessions WHERE user_id=%s", (user_id,))
+    total_sessions = cursor.fetchone()[0] or 0
+    
+    cursor.execute("""
+        SELECT sq.question_type, AVG(er.final_score) as avg_score
+        FROM interview_sessions s
+        JOIN session_questions sq ON s.session_id = sq.session_id
+        JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
+        JOIN evaluation_results er ON ua.answer_id = er.answer_id
+        WHERE s.user_id = %s
+        GROUP BY sq.question_type
+    """, (user_id,))
+    performance_by_type = cursor.fetchall()
+    
+    cursor.execute("SELECT ats_score, created_at, matched_skills, missing_skills, feedback FROM resume_analysis WHERE user_id=%s ORDER BY created_at DESC LIMIT 5", (user_id,))
+    resumes = cursor.fetchall()
+    
+    cursor.execute("""
+        SELECT sq.question_type, sq.difficulty, ua.answer_text, er.final_score, er.feedback
+        FROM interview_sessions s
+        JOIN session_questions sq ON s.session_id = sq.session_id
+        JOIN user_answers ua ON sq.session_question_id = ua.session_question_id
+        JOIN evaluation_results er ON ua.answer_id = er.answer_id
+        WHERE s.user_id = %s AND er.final_score < 50
+        ORDER BY er.final_score ASC LIMIT 10
+    """, (user_id,))
+    struggled_questions = cursor.fetchall()
+    
+    cursor.close()
+    
+    return render_template("admin_user_profile.html",
+                           target_user=target_user,
+                           total_sessions=total_sessions,
+                           performance_by_type=performance_by_type,
+                           resumes=resumes,
+                           struggled_questions=struggled_questions)
+
+@app.route("/admin/user/<int:user_id>/action", methods=["POST"])
+@admin_required
+def admin_user_action(user_id):
+    action = request.form.get("action")
+    cursor = mysql.connection.cursor()
+    
+    if action == "suspend":
+        cursor.execute("UPDATE users SET is_suspended = TRUE WHERE user_id=%s", (user_id,))
+    elif action == "unsuspend":
+        cursor.execute("UPDATE users SET is_suspended = FALSE WHERE user_id=%s", (user_id,))
+    elif action == "delete":
+        # Cascading delete
+        cursor.execute("DELETE FROM resume_analysis WHERE user_id=%s", (user_id,))
+        
+        cursor.execute("SELECT session_id FROM interview_sessions WHERE user_id=%s", (user_id,))
+        sessions = cursor.fetchall()
+        
+        for sess in sessions:
+            s_id = sess[0]
+            cursor.execute("SELECT session_question_id FROM session_questions WHERE session_id=%s", (s_id,))
+            s_questions = cursor.fetchall()
+            for sq in s_questions:
+                sq_id = sq[0]
+                cursor.execute("SELECT answer_id FROM user_answers WHERE session_question_id=%s", (sq_id,))
+                answers = cursor.fetchall()
+                for ans in answers:
+                    a_id = ans[0]
+                    cursor.execute("DELETE FROM evaluation_results WHERE answer_id=%s", (a_id,))
+                cursor.execute("DELETE FROM user_answers WHERE session_question_id=%s", (sq_id,))
+            cursor.execute("DELETE FROM session_questions WHERE session_id=%s", (s_id,))
+            
+        cursor.execute("DELETE FROM interview_sessions WHERE user_id=%s", (user_id,))
+        cursor.execute("DELETE FROM users WHERE user_id=%s", (user_id,))
+        
+        mysql.connection.commit()
+        cursor.close()
+        return redirect(url_for("admin_dashboard"))
+        
+    mysql.connection.commit()
+    cursor.close()
+    return redirect(url_for("admin_user_profile", user_id=user_id))
 # DASHBOARD (FULL DYNAMIC DB VERSION)
 # =========================================================
 @app.route("/dashboard")
@@ -671,17 +852,26 @@ def analyze_resume():
 
     os.remove(resume_path)
 
-    # Select role (you can improve this later)
-    role = "data_scientist"
+    # Read role from form (used only for critical skill warnings)
+    role = request.form.get("role", "data_scientist").strip().lower()
+    if role not in ROLE_SKILLS:
+        role = "data_scientist"
 
-    role_skills = ROLE_SKILLS.get(role, [])
     critical_skills = ROLE_CRITICAL_SKILLS.get(role, [])
 
-    # Skill extraction
-    found_skills = extract_skills(resume_text, role_skills)
+    # Extract skills required by THIS specific job description using skillNer
+    jd_skills = extract_skills_from_jd(jd_text)
+
+    # Fallback: if JD is too vague and yields no recognizable skills,
+    # fall back to the role-profile list so the analysis still runs.
+    if not jd_skills:
+        jd_skills = ROLE_SKILLS.get(role, [])
+
+    # Find which JD skills are present in the resume
+    found_skills = extract_skills(resume_text, jd_skills)
 
     # Scoring
-    skill_score, matched, missing = skill_match_score(found_skills, role_skills)
+    skill_score, matched, missing = skill_match_score(found_skills, jd_skills)
     semantic_score = semantic_similarity(resume_text, jd_text)
     ats_score = final_ats_score(skill_score, semantic_score)
 

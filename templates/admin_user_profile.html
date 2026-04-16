@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliPrep - Admin | User Profile</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #818CF8;
+            --secondary: #ec4899;
+            --accent: #14b8a6;
+            --bg-body: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.6);
+            --bg-card-hover: rgba(30, 41, 59, 0.8);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-glass: rgba(255, 255, 255, 0.05);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, .logo-text, .stat-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* ================= BACKGROUND GLOW ================= */
+        .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            top: -200px;
+            left: -200px;
+            z-index: -1;
+            animation: floatGlow 10s ease-in-out infinite alternate;
+        }
+
+        .bg-glow-2 {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            bottom: -200px;
+            right: -200px;
+            z-index: -1;
+            animation: floatGlow 8s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        /* ================= HEADER NAV ================= */
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* ================= LAYOUT ================= */
+        .layout-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: rgba(15, 23, 42, 0.4);
+            border-right: 1px solid var(--border-glass);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            width: 22px;
+            text-align: center;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%);
+            color: #fbbf24;
+            border-color: rgba(234, 179, 8, 0.3);
+            box-shadow: inset 0 0 20px rgba(234, 179, 8, 0.05);
+        }
+
+        /* MAIN DASHBOARD */
+        .main-content {
+            flex: 1;
+            padding: 40px 50px;
+            overflow-y: auto;
+        }
+
+        .welcome-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .welcome-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .welcome-header p {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* BUTTONS */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: none;
+        }
+        
+        .btn-action i {
+            font-size: 16px;
+        }
+        
+        .btn-suspend {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-suspend:hover {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+        
+        .btn-unsuspend {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-unsuspend:hover {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+        
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .btn-back {
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-main);
+            border-color: var(--border-glass);
+            text-decoration: none;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* PANELS */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 16px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* USER INFO BADGE */
+        .info-group {
+            margin-bottom: 24px;
+        }
+        .info-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .info-value {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .score-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .score-high { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .score-med { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .score-low { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        /* PERFORMANCE FLEX */
+        .perf-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .perf-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-glass);
+        }
+        
+        .perf-name {
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* TABLES */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .admin-table th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-glass);
+            white-space: nowrap;
+        }
+        
+        .admin-table td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            font-size: 14px;
+            color: #fff;
+            vertical-align: top;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1; pointer-events: auto;
+        }
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+        }
+        .modal-title { font-size: 24px; color: #fff; font-weight: 800; margin-bottom: 12px; }
+        .modal-text { color: var(--text-muted); font-size: 15px; margin-bottom: 24px; line-height: 1.6; }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+
+    <header>
+        <a href="{{ url_for('landing') }}" class="logo">
+            <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo" class="logo-icon">
+            <span class="logo-text">IntelliPrep</span>
+        </a>
+        <div class="user-nav">
+            <div class="user-avatar"><i class="fas fa-crown"></i></div>
+            <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <aside class="sidebar">
+            <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="{{ url_for('interview') }}" class="nav-item"><i class="fas fa-laptop-code"></i> Practice</a>
+            <a href="{{ url_for('resume') }}" class="nav-item"><i class="fas fa-file-alt"></i> Resume Scanner</a>
+            <a href="{{ url_for('progress') }}" class="nav-item"><i class="fas fa-chart-line"></i> Progress</a>
+            {% if session.get('is_admin') %}
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item active"><i class="fas fa-shield-alt"></i> Admin Panel</a>
+            {% endif %}
+        </aside>
+
+        <main class="main-content">
+            <div class="welcome-header">
+                <div>
+                    <h1><a href="{{ url_for('admin_dashboard') }}" style="color:var(--text-muted); text-decoration:none;"><i class="fas fa-arrow-left" style="font-size:24px; margin-right:12px;"></i></a> {{ target_user[1] }}</h1>
+                    <p>Detailed insight and management for this user account.</p>
+                </div>
+                
+                <div class="header-actions">
+                    <form id="actionForm" method="POST" action="{{ url_for('admin_user_action', user_id=target_user[0]) }}" style="display:none;">
+                        <input type="hidden" name="action" id="actionInput">
+                    </form>
+                    
+                    {% if target_user[3] %}
+                        <!-- Is Suspended -->
+                        <button class="btn-action btn-unsuspend" onclick="submitAction('unsuspend')"><i class="fas fa-unlock"></i> Reactivate User</button>
+                    {% else %}
+                        <!-- Is Active -->
+                        <button class="btn-action btn-suspend" onclick="submitAction('suspend')"><i class="fas fa-ban"></i> Suspend User</button>
+                    {% endif %}
+                    
+                    <button class="btn-action btn-delete" onclick="showDeleteModal()"><i class="fas fa-trash-alt"></i> Delete User</button>
+                </div>
+            </div>
+
+            <div class="grid-layout">
+                <!-- Left Column: Primary Info -->
+                <div class="glass-panel" style="margin-bottom:0;">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fas fa-id-badge" style="color:var(--primary-light);"></i> Identity</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value">{{ target_user[1] }}</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-value">{{ target_user[2] }}</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <div class="info-label">Created At</div>
+                        <div class="info-value">{{ target_user[4].strftime('%b %d, %Y') if target_user[4] else 'N/A' }}</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <div class="info-label">Status</div>
+                        {% if target_user[3] %}
+                            <span class="score-pill score-low"><i class="fas fa-times-circle"></i> Suspended</span>
+                        {% else %}
+                            <span class="score-pill score-high"><i class="fas fa-check-circle"></i> Active</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="info-group" style="margin-top:40px; margin-bottom:0;">
+                        <div class="info-label">Total Completed Sessions</div>
+                        <div style="font-size: 32px; font-weight:800; color:var(--primary-light);">{{ total_sessions }}</div>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Performance Breakdown -->
+                <div class="glass-panel" style="margin-bottom:0;">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fas fa-chart-bar" style="color:var(--primary-light);"></i> Average Performance By Category</div>
+                    </div>
+                    
+                    <div class="perf-grid">
+                        {% if performance_by_type %}
+                            {% for perf in performance_by_type %}
+                                <div class="perf-item">
+                                    <div class="perf-name">{{ perf[0] }} Questions</div>
+                                    <span class="score-pill {% if perf[1] >= 80 %}score-high{% elif perf[1] >= 50 %}score-med{% else %}score-low{% endif %}">
+                                        {{ perf[1]|round(1) }}%
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div style="text-align:center; padding: 20px; color: var(--text-muted);">No interview sessions logged yet.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Latest Resumes -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-file-alt" style="color:var(--primary-light);"></i> Recent Resume Evaluations</div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>ATS Score</th>
+                                <th>Top Skills</th>
+                                <th>Missing Skills</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for res in resumes %}
+                            <tr>
+                                <td>{{ res[1].strftime('%b %d, %Y') if res[1] else 'N/A' }}</td>
+                                <td>
+                                    <span class="score-pill {% if res[0] >= 80 %}score-high{% elif res[0] >= 50 %}score-med{% else %}score-low{% endif %}">
+                                        {{ res[0]|round(1) }}
+                                    </span>
+                                </td>
+                                <td><div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ res[2] }}">{{ res[2] }}</div></td>
+                                <td><div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ res[3] }}">{{ res[3] }}</div></td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                    User has not uploaded any resumes.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Struggled Questions -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-exclamation-triangle" style="color:var(--warning);"></i> Lowest Scoring Answers</div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Question Type</th>
+                                <th>Answer Context</th>
+                                <th>Score</th>
+                                <th>AI Feedback Issued</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sq in struggled_questions %}
+                            <tr>
+                                <td>
+                                    <span style="font-weight:600; color:#fff;">{{ sq[0] }}</span><br>
+                                    <span style="font-size:12px; color:var(--text-muted);">{{ sq[1] }}</span>
+                                </td>
+                                <td>
+                                    <div style="line-height:1.4; max-width:300px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;" title="{{ sq[2] }}">
+                                        "{{ sq[2] }}"
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="score-pill score-low">{{ sq[3]|round(1) }}%</span>
+                                </td>
+                                <td>
+                                    <div style="line-height:1.4; max-width:300px; font-size:13px; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">
+                                        {{ sq[4] }}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                    Excellent! No low scoring responses found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-card">
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--danger); margin-bottom:16px;"></i>
+            <h2 class="modal-title">Delete User?</h2>
+            <p class="modal-text">This will permanently and irreversibly scrub this user, their resumes, and all their interview history from the database. Are you sure you want to proceed?</p>
+            <div class="modal-actions">
+                <button class="btn-action btn-back" onclick="hideDeleteModal()">Cancel</button>
+                <button class="btn-action btn-delete" onclick="submitAction('delete')">Confirm Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function submitAction(action) {
+            document.getElementById('actionInput').value = action;
+            document.getElementById('actionForm').submit();
+        }
+        
+        function showDeleteModal() {
+            document.getElementById('deleteModal').classList.add('active');
+        }
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>

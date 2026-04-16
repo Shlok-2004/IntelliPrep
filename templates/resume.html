@@ -466,6 +466,55 @@
             margin-top: 3px;
         }
 
+        /* Role Selector */
+        .role-options {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .role-card {
+            flex: 1;
+            min-width: 140px;
+            cursor: pointer;
+        }
+
+        .role-card input[type="radio"] {
+            display: none;
+        }
+
+        .role-card-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 16px;
+            border-radius: 14px;
+            border: 2px solid var(--border-glass);
+            background: rgba(15, 23, 42, 0.3);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+
+        .role-card-inner i {
+            font-size: 24px;
+        }
+
+        .role-card:hover .role-card-inner {
+            border-color: rgba(99, 102, 241, 0.4);
+            color: #fff;
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .role-card input[type="radio"]:checked+.role-card-inner {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
         @media (max-width: 1024px) {
             .upload-grid {
                 grid-template-columns: 1fr;
@@ -508,10 +557,7 @@
             <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo" class="logo-icon">
             <span class="logo-text">IntelliPrep</span>
         </a>
-        <div class="user-nav">
-            <div class="user-avatar">{{ user_name[0].upper() if user_name else 'U' }}</div>
-            <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
+
     </header>
 
     <div class="layout-container">
@@ -520,6 +566,9 @@
             <a href="{{ url_for('interview') }}" class="nav-item"><i class="fas fa-laptop-code"></i> Practice</a>
             <a href="{{ url_for('resume') }}" class="nav-item active"><i class="fas fa-file-alt"></i> Resume Scanner</a>
             <a href="{{ url_for('progress') }}" class="nav-item"><i class="fas fa-chart-line"></i> Progress</a>
+            {% if session.get('is_admin') %}
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fas fa-shield-alt"></i> Admin Panel</a>
+            {% endif %}
         </aside>
 
         <main class="main-content">
@@ -545,6 +594,37 @@
                         <h3><i class="fas fa-briefcase"></i> Job Description</h3>
                         <textarea name="job_description" placeholder="Paste the target job description here..."
                             required></textarea>
+                    </div>
+                </div>
+
+                <!-- Role Selector -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h3><i class="fas fa-user-tie"></i> Target Role</h3>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+                        Select the role you are applying for so we can match the right skill set.
+                    </p>
+                    <div class="role-options">
+                        <label class="role-card">
+                            <input type="radio" name="role" value="data_scientist" required>
+                            <div class="role-card-inner">
+                                <i class="fas fa-brain"></i>
+                                <span>Data Scientist</span>
+                            </div>
+                        </label>
+                        <label class="role-card">
+                            <input type="radio" name="role" value="fullstack" required>
+                            <div class="role-card-inner">
+                                <i class="fas fa-layer-group"></i>
+                                <span>Web Developer</span>
+                            </div>
+                        </label>
+                        <label class="role-card">
+                            <input type="radio" name="role" value="cybersecurity" required>
+                            <div class="role-card-inner">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Cybersecurity</span>
+                            </div>
+                        </label>
                     </div>
                 </div>
 

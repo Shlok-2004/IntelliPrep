@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntelliPrep - Dashboard</title>
+    <title>IntelliPrep - Admin Dashboard</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,9 +15,6 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
@@ -49,11 +46,7 @@
             flex-direction: column;
         }
 
-        h1,
-        h2,
-        h3,
-        .logo-text,
-        .stat-value {
+        h1, h2, h3, .logo-text, .stat-value {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
@@ -83,13 +76,8 @@
         }
 
         @keyframes floatGlow {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-
-            100% {
-                transform: translate(50px, 50px) scale(1.1);
-            }
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
         }
 
         /* ================= HEADER NAV ================= */
@@ -140,12 +128,13 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             font-size: 16px;
+            color: #fff;
         }
 
         .btn-logout {
@@ -209,10 +198,10 @@
         }
 
         .nav-item.active {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
-            color: var(--primary-light);
-            border-color: rgba(99, 102, 241, 0.3);
-            box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.05);
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%);
+            color: #fbbf24;
+            border-color: rgba(234, 179, 8, 0.3);
+            box-shadow: inset 0 0 20px rgba(234, 179, 8, 0.05);
         }
 
         /* MAIN DASHBOARD */
@@ -231,6 +220,21 @@
             font-weight: 800;
             color: #fff;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-badge {
+            font-size: 14px;
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transform: translateY(-4px);
         }
 
         .welcome-header p {
@@ -274,18 +278,18 @@
             justify-content: center;
             font-size: 26px;
             color: #fff;
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+        }
+
+        .stat-icon.blue {
             background: linear-gradient(135deg, var(--primary), #8B5CF6);
             box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
         }
 
-        .stat-icon.pink {
-            background: linear-gradient(135deg, #ec4899, #f43f5e);
-            box-shadow: 0 8px 16px rgba(236, 72, 153, 0.3);
-        }
-
-        .stat-icon.cyan {
-            background: linear-gradient(135deg, #06b6d4, #0ea5e9);
-            box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3);
+        .stat-icon.green {
+            background: linear-gradient(135deg, #10B981, #059669);
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
         }
 
         .stat-info h3 {
@@ -303,14 +307,7 @@
             line-height: 1;
         }
 
-        /* CHARTS SECTION */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-
+        /* TABLE SECTION */
         .glass-panel {
             background: var(--bg-card);
             backdrop-filter: blur(12px);
@@ -319,6 +316,7 @@
             border-radius: 24px;
             padding: 32px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 40px;
         }
 
         .panel-header {
@@ -333,72 +331,73 @@
             font-weight: 700;
             color: #fff;
         }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .admin-table {
             width: 100%;
-            display: flex;
-            justify-content: center;
+            border-collapse: collapse;
         }
-
-        /* ACTIVITY SECTION */
-        .activity-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .activity-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        
+        .admin-table th {
+            text-align: left;
             padding: 16px 20px;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 16px;
-            border: 1px solid var(--border-glass);
-            transition: background 0.3s;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-glass);
+            white-space: nowrap;
         }
-
-        .activity-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .activity-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .activity-left i {
-            font-size: 20px;
-            color: var(--primary-light);
-        }
-
-        .activity-text h4 {
+        
+        .admin-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
             font-size: 15px;
             color: #fff;
-            margin-bottom: 4px;
         }
-
-        .activity-text p {
+        
+        .admin-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .user-name-col {
+            font-weight: 600;
+        }
+        
+        .user-email {
             font-size: 13px;
             color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 4px;
         }
-
-        .activity-score {
-            font-size: 16px;
-            font-weight: 700;
+        
+        .score-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .score-high {
+            background: rgba(16, 185, 129, 0.15);
             color: #10B981;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 6px 12px;
-            border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
-
-        @media (max-width: 1024px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
+        
+        .score-med {
+            background: rgba(245, 158, 11, 0.15);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        .score-low {
+            background: rgba(239, 68, 68, 0.15);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
         @media (max-width: 768px) {
@@ -438,113 +437,111 @@
             <span class="logo-text">IntelliPrep</span>
         </a>
         <div class="user-nav">
-            <div class="user-avatar">{{ user_name[0].upper() }}</div>
+            <div class="user-avatar"><i class="fas fa-crown"></i></div>
             <a href="{{ url_for('logout') }}" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </header>
 
     <div class="layout-container">
         <aside class="sidebar">
-            <a href="{{ url_for('dashboard') }}" class="nav-item active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="{{ url_for('dashboard') }}" class="nav-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
             <a href="{{ url_for('interview') }}" class="nav-item"><i class="fas fa-laptop-code"></i> Practice</a>
             <a href="{{ url_for('resume') }}" class="nav-item"><i class="fas fa-file-alt"></i> Resume Scanner</a>
             <a href="{{ url_for('progress') }}" class="nav-item"><i class="fas fa-chart-line"></i> Progress</a>
             {% if session.get('is_admin') %}
-            <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fas fa-shield-alt"></i> Admin Panel</a>
+            <a href="{{ url_for('admin_dashboard') }}" class="nav-item active"><i class="fas fa-shield-alt"></i> Admin Panel</a>
             {% endif %}
         </aside>
 
         <main class="main-content">
             <div class="welcome-header">
-                <h1>Welcome back, {{ user_name }}! 👋</h1>
-                <p>Here is an overview of your interview preparation analytics and performance.</p>
+                <h1>Platform Analytics <span class="admin-badge">ADMIN VIEW</span></h1>
+                <p>Welcome to the global dashboard, {{ user_name }}. Overview of platform-wide metrics.</p>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Registered Users</h3>
+                        <div class="stat-value" data-target="{{ total_users }}">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
                     <div class="stat-info">
-                        <h3>Total Interviews</h3>
+                        <h3>Total Sessions Held</h3>
                         <div class="stat-value" data-target="{{ total_interviews }}">0</div>
                     </div>
                 </div>
 
                 <div class="stat-card">
-                    <div class="stat-icon pink"><i class="fas fa-bullseye"></i></div>
+                    <div class="stat-icon green"><i class="fas fa-star"></i></div>
                     <div class="stat-info">
-                        <h3>Average Score</h3>
-                        <div class="stat-value" data-target="{{ avg_score }}">0%</div>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon cyan"><i class="fas fa-file-contract"></i></div>
-                    <div class="stat-info">
-                        <h3>Latest Resume Score</h3>
-                        <div class="stat-value" data-target="{{ resume_score }}">0</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-grid">
-                <div class="glass-panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">Score by Question Type</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="questionPieChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="glass-panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">Resume Skills Analysis</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="resumePieChart"></canvas>
+                        <h3>Global Avg Score</h3>
+                        <div class="stat-value" data-target="{{ global_avg_score }}">0%</div>
                     </div>
                 </div>
             </div>
 
             <div class="glass-panel">
                 <div class="panel-header">
-                    <h2 class="panel-title">Recent Activity</h2>
+                    <h2 class="panel-title">User Performance Overview</h2>
                 </div>
-                <div class="activity-list">
-                    {% if activities|length == 0 %}
-                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">No recent interview activity
-                        found. Head over to the practice section to get started!</p>
-                    {% else %}
-                    {% for act in activities %}
-                    <div class="activity-item">
-                        <div class="activity-left">
-                            <i class="fas fa-check-circle"></i>
-                            <div class="activity-text">
-                                <h4>{{ act[0] }}</h4>
-                                <p>{{ act[1] }}</p>
-                            </div>
-                        </div>
-                        <div class="activity-score">{{ act[2] }}%</div>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
+                
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>User Info</th>
+                                <th>Sessions</th>
+                                <th>Avg Score</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users_data %}
+                            <tr style="cursor: pointer; transition: 0.3s;" onclick="if(!event.target.closest('a')) window.location.href='/admin/user/{{ user[0] }}'">
+                                <td>{{ user[0] }}</td>
+                                <td>
+                                    <div class="user-name-col">{{ user[1] }}</div>
+                                    <div class="user-email">{{ user[2] }}</div>
+                                </td>
+                                <td>{{ user[3] }}</td>
+                                <td>
+                                    {% set score = user[4] %}
+                                    <span class="score-pill {% if score >= 80 %}score-high{% elif score >= 50 %}score-med{% else %}score-low{% endif %}">
+                                        {{ score|round(1) }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user[5] %}
+                                    <span class="score-pill score-low"><i class="fas fa-ban"></i> Suspended</span>
+                                    {% else %}
+                                    <span class="score-pill score-high"><i class="fas fa-check-circle"></i> Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="/admin/user/{{ user[0] }}" class="btn-logout" style="padding: 6px 12px; background: rgba(99, 102, 241, 0.1); color: var(--primary-light); border-color: rgba(99, 102, 241, 0.3);"><i class="fas fa-user-cog"></i> Profile</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                    No users found in the analytics system.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
         </main>
     </div>
-
-    <!-- DATA PASSED FROM FLASK -->
-    <div id="flask-data" data-labels='{{ question_types | tojson }}' data-scores='{{ question_scores | tojson }}'
-        data-matched="{{ matched_count }}" data-missing="{{ missing_count }}" style="display: none;"></div>
-
-    <script>
-        const flaskData = document.getElementById('flask-data');
-        const questionLabels = JSON.parse(flaskData.dataset.labels || '[]');
-        const questionScores = JSON.parse(flaskData.dataset.scores || '[]');
-        const matchedCount = parseInt(flaskData.dataset.matched || 0, 10);
-        const missingCount = parseInt(flaskData.dataset.missing || 0, 10);
-    </script>
 
     <script>
         // Numbers Animation
@@ -558,100 +555,18 @@
                 let t = setInterval(() => {
                     current += step;
                     if (current >= target) {
-                        el.textContent = isPercent ? target + '%' : target;
+                        el.textContent = isPercent ? target.toFixed(1) + '%' : target;
                         clearInterval(t);
                     } else {
-                        el.textContent = isPercent ? Math.floor(current) + '%' : Math.floor(current);
+                        el.textContent = isPercent ? current.toFixed(1) + '%' : Math.floor(current);
                     }
                 }, 20);
             });
         }
 
-        // Initialize Charts
-        function initCharts() {
-            Chart.defaults.color = '#94a3b8';
-            Chart.defaults.font.family = "'Inter', sans-serif";
-
-            // 1. Question Type Pie Chart
-            const ctxPie1 = document.getElementById('questionPieChart').getContext('2d');
-
-            let hasData1 = questionScores.some(v => v > 0);
-            let labels1 = hasData1 ? questionLabels : ['No Data Yet'];
-            let data1 = hasData1 ? questionScores : [1];
-            let bg1 = hasData1 ? ['#6366F1', '#ec4899', '#0ea5e9', '#10B981', '#F59E0B'] : ['rgba(255,255,255,0.1)'];
-
-            new Chart(ctxPie1, {
-                type: 'pie',
-                data: {
-                    labels: labels1,
-                    datasets: [{
-                        data: data1,
-                        backgroundColor: bg1,
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { padding: 20, color: '#f8fafc', font: { size: 13 } } },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    if (!hasData1) return ' No records found';
-                                    return ' Avg Score: ' + context.raw + '%';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // 2. Resume Skills Doughnut (Pie) Chart
-            const ctxPie2 = document.getElementById('resumePieChart').getContext('2d');
-
-            let hasData2 = (matchedCount > 0 || missingCount > 0);
-            let data2 = hasData2 ? [matchedCount, missingCount] : [1];
-            let bg2 = hasData2 ? ['#10B981', '#ef4444'] : ['rgba(255,255,255,0.1)'];
-            let labels2 = hasData2 ? ['Matched Skills', 'Missing Skills'] : ['No Data Yet'];
-
-            new Chart(ctxPie2, {
-                type: 'doughnut',
-                data: {
-                    labels: labels2,
-                    datasets: [{
-                        data: data2,
-                        backgroundColor: bg2,
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '0%', // Changed from doughnut (65%) to pie (0%) for consistency with prompt
-                    plugins: {
-                        legend: { position: 'bottom', labels: { padding: 20, color: '#f8fafc', font: { size: 13 } } },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    if (!hasData2) return ' No active resume data';
-                                    return ' ' + context.label + ': ' + context.raw;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
         window.onload = () => {
             animateCounters();
-            initCharts();
         };
     </script>
-
 </body>
-
 </html>

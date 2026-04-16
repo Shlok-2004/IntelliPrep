@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntelliPrep - Login</title>
+    <title>IntelliPrep - Admin Login</title>
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,9 +18,9 @@
 
     <style>
         :root {
-            --primary: #6366F1;
-            --primary-light: #818CF8;
-            --primary-dark: #4F46E5;
+            --primary: #f59e0b; /* Amber/Gold for admin */
+            --primary-light: #fbbf24;
+            --primary-dark: #d97706;
             --secondary: #ec4899;
             --bg-body: #0f172a;
             --bg-card: rgba(30, 41, 59, 0.7);
@@ -59,7 +59,7 @@
             position: absolute;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
             border-radius: 50%;
             top: -100px;
             left: -200px;
@@ -71,7 +71,7 @@
             position: absolute;
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
             border-radius: 50%;
             bottom: -100px;
             right: -100px;
@@ -90,19 +90,15 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 500px; /* smaller for admin, central focus */
             width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: center;
             background: rgba(15, 23, 42, 0.4);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.2);
             border-radius: 32px;
             padding: 10px;
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(245, 158, 11, 0.1);
             z-index: 1;
         }
 
@@ -116,7 +112,7 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             transition: transform 0.3s ease;
         }
 
@@ -129,7 +125,7 @@
             height: 32px;
             object-fit: cover;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
         }
 
         .logo-text {
@@ -139,6 +135,20 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--primary-light);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .login-header {
@@ -181,7 +191,6 @@
         .input-field {
             width: 100%;
             padding: 14px 46px;
-            /* Space for both left and right icons */
             border-radius: 12px;
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -198,7 +207,7 @@
         .input-field:focus {
             border-color: var(--primary);
             background: rgba(15, 23, 42, 0.8);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
         }
 
         .input-field:focus+.input-icon {
@@ -221,70 +230,6 @@
             color: #fff;
         }
 
-        .remember-forgot {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 32px;
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .forgot-link {
-            color: var(--primary-light);
-            text-decoration: none;
-            transition: color 0.3s ease;
-            font-weight: 500;
-        }
-
-        .forgot-link:hover {
-            color: #fff;
-            text-decoration: underline;
-        }
-
-        /* Custom Checkbox */
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-
-        .custom-checkbox {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .custom-checkbox:checked {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .custom-checkbox:after {
-            content: '\f00c';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            color: white;
-            font-size: 12px;
-            display: none;
-        }
-
-        .custom-checkbox:checked:after {
-            display: block;
-        }
-
         .btn-login {
             width: 100%;
             padding: 16px;
@@ -292,16 +237,17 @@
             border: none;
             font-size: 16px;
             font-weight: 600;
-            background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, #b45309 100%);
             color: white;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
             text-transform: uppercase;
             letter-spacing: 1px;
             font-family: 'Plus Jakarta Sans', sans-serif;
             position: relative;
             overflow: hidden;
+            margin-top: 10px;
         }
 
         .btn-login::before {
@@ -321,7 +267,7 @@
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
         }
 
         .signup-section {
@@ -343,93 +289,17 @@
             color: #fff;
             text-decoration: underline;
         }
-
-        /* ================= ILLUSTRATION SECTION ================= */
-        .illustration-card {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.05));
-            border-radius: 24px;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
+        
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .illustration-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        .illustration-card img {
-            max-width: 90%;
-            height: auto;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 2;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-15px);
-            }
-
-            100% {
-                transform: translateY(0px);
-            }
-        }
-
-        .illustration-text {
-            position: relative;
-            z-index: 2;
-        }
-
-        .illustration-text h3 {
-            font-size: 24px;
-            color: #fff;
-            margin-bottom: 12px;
-        }
-
-        .illustration-text p {
-            color: var(--text-muted);
-            font-size: 15px;
-            line-height: 1.6;
-            max-width: 300px;
-        }
-
-        @media (max-width: 900px) {
-            .container {
-                grid-template-columns: 1fr;
-                max-width: 500px;
-                padding: 20px;
-            }
-
-            .illustration-card {
-                display: none;
-            }
-
-            .login-section {
-                padding: 30px 20px;
-            }
-
-            body {
-                overflow-y: auto;
-            }
         }
     </style>
 </head>
@@ -443,62 +313,51 @@
 
         <!-- LOGIN CARD -->
         <div class="login-section">
-            <a href="{{ url_for('landing') }}" class="logo">
-                <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo"
-                    class="logo-icon">
-                <span class="logo-text">IntelliPrep</span>
-            </a>
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <a href="{{ url_for('landing') }}" class="logo">
+                    <img src="{{ url_for('static', filename='images/Logo.jpeg') }}" alt="IntelliPrep Logo"
+                        class="logo-icon">
+                    <span class="logo-text">IntelliPrep</span>
+                </a>
+            </div>
+            
+            <div class="admin-badge"><i class="fas fa-shield-alt"></i> Admin Portal</div>
 
-            <h1 class="login-header">Welcome Back <span
-                    style="display:inline-block; animation: float 3s ease-in-out infinite;">👍</span></h1>
-            <p class="login-subtitle">Log in to resume your interview prep dashboard.</p>
+            <h1 class="login-header">Admin System <i class="fas fa-lock" style="font-size: 24px; color: var(--primary);"></i></h1>
+            <p class="login-subtitle">Authenticate to access the administrative dashboard.</p>
 
-            <form method="POST" action="{{ url_for('login') }}">
+            {% if error %}
+            <div class="error-msg">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('admin_login') }}">
 
                 <div class="input-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" name="email" class="input-field" placeholder="john@example.com" required>
+                    <label class="form-label">Admin Email</label>
+                    <input type="email" name="email" class="input-field" placeholder="admin@intelliprep.com" required>
                     <i class="fas fa-envelope input-icon"></i>
                 </div>
 
                 <div class="input-group">
                     <label class="form-label">Password</label>
                     <input type="password" name="password" id="password" class="input-field"
-                        placeholder="Enter your password" required>
-                    <i class="fas fa-lock input-icon"></i>
+                        placeholder="Enter your admin password" required>
+                    <i class="fas fa-key input-icon"></i>
                     <button type="button" class="password-toggle" onclick="togglePassword()">
                         <i class="fas fa-eye" id="eye-icon"></i>
                     </button>
                 </div>
 
-                <div class="remember-forgot">
-                    <label class="checkbox-container">
-                        <input type="checkbox" name="remember" class="custom-checkbox">
-                        <span>Remember me</span>
-                    </label>
-                    <a href="{{ url_for('forgot_password') }}" class="forgot-link">Forgot password?</a>
-                </div>
-
                 <button type="submit" class="btn-login">
-                    Login
+                    Authorize
                 </button>
             </form>
 
             <div class="signup-section">
-                New here?
-                <a href="{{ url_for('signup') }}" class="signup-link">Sign Up instead</a>
-                <div style="margin-top: 15px; font-size: 13px;">
-                    <a href="{{ url_for('admin_login') }}" style="color: var(--text-muted); text-decoration: none; transition: 0.3s;" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='var(--text-muted)'"><i class="fas fa-shield-alt"></i> Admin Login</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- ILLUSTRATION -->
-        <div class="illustration-card">
-            <img src="{{ url_for('static', filename='images/AI_Collaboration2.jpeg') }}" alt="AI Collaboration">
-            <div class="illustration-text">
-                <h3>Dominate Your Interviews</h3>
-                <p>Your previous progress and detailed analytics are waiting for you inside the dashboard.</p>
+                Not an administrator?
+                <a href="{{ url_for('login') }}" class="signup-link">Standard Login</a>
             </div>
         </div>
 
